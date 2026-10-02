@@ -22,12 +22,13 @@ public class ThirdPersonController : MonoBehaviour
 
     private void Start()
     {
-        view = GetComponent<PhotonView>();
     }
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        view = GetComponent<PhotonView>();
+
         rb.freezeRotation = true;
 
         yaw = transform.eulerAngles.y; 
@@ -47,7 +48,10 @@ public class ThirdPersonController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        Move();
+        if (view.IsMine)
+        {
+            Move();
+        }
     }
 
     void LateUpdate()

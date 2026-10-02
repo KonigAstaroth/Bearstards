@@ -15,6 +15,27 @@ public class SpawnPlayers : MonoBehaviour
 
     private void Start()
     {
+        StartCoroutine(WaitForRoom());
+    }
+
+    private System.Collections.IEnumerator WaitForRoom()
+    {
+        while (!PhotonNetwork.InRoom)
+        {
+            yield return null;
+        }
+
+        SpawnPlayer();
+    }
+
+    private void SpawnPlayer()
+    {
+        Debug.Log(
+            $"SPAWNING PLAYER | " +
+            $"InRoom: {PhotonNetwork.InRoom} | " +
+            $"Actor: {PhotonNetwork.LocalPlayer.ActorNumber}"
+        );
+
         for (int i = 0; i < maxAttempts; i++)
         {
             Vector3 randomPosition = transform.position + new Vector3(
@@ -31,10 +52,16 @@ public class SpawnPlayers : MonoBehaviour
 
             if (!occupied)
             {
-                PhotonNetwork.Instantiate(
+                GameObject player = PhotonNetwork.Instantiate(
                     playerPrefab.name,
                     randomPosition,
                     Quaternion.identity
+                );
+
+                Debug.Log(
+                    $"PLAYER CREATED | " +
+                    $"ViewID: {player.GetComponent<PhotonView>().ViewID} | " +
+                    $"IsMine: {player.GetComponent<PhotonView>().IsMine}"
                 );
 
                 return;

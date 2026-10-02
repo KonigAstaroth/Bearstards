@@ -45,8 +45,7 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
 
      public override void OnJoinRoomFailed(short returnCode, string message)
     {
-        Debug.LogError("FAIL ON JOINING ROOM" + returnCode);
-        Debug.LogError("Mensaje " + message);
+        Debug.LogError($"FAIL ON JOINING ROOM | Code: {returnCode} | Message: {message}");
     }
 
     public override void OnJoinedRoom()
