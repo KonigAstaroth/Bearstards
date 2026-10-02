@@ -4,7 +4,7 @@ using Photon.Realtime;
 using UnityEngine.SceneManagement;
 public class RoomManager : MonoBehaviourPunCallbacks
 {
-    void Start()
+    private void Start()
     {
         Debug.Log("Connecting...");
         PhotonNetwork.ConnectUsingSettings();
@@ -12,11 +12,14 @@ public class RoomManager : MonoBehaviourPunCallbacks
 
     public override void OnConnectedToMaster()
     {
+        Debug.Log("Connected to Master");
         PhotonNetwork.JoinLobby();
     }
 
     public override void OnJoinedLobby()
     {
-        SceneManager.LoadScene("Title");
+        Debug.Log("Joined to Lobby");
+        PhotonNetwork.AutomaticallySyncScene = true;
+        SceneManager.LoadScene("Lobby");
     }
 }
