@@ -54,7 +54,7 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
         Debug.Log("Ya estamos en la room " + PhotonNetwork.CurrentRoom.Name);
         if (PhotonNetwork.IsMasterClient)
         { 
-            PhotonNetwork.LoadLevel("Store");
+            PhotonNetwork.LoadLevel("Debug");
         }
     }
 }

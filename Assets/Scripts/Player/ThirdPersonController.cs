@@ -1,6 +1,7 @@
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Photon.Pun;
 
 [RequireComponent(typeof(Rigidbody))]
 public class ThirdPersonController : MonoBehaviour
@@ -13,9 +14,16 @@ public class ThirdPersonController : MonoBehaviour
     public float cameraDistance = 5f;
     public float cameraHeight = 1.6f;
 
+    PhotonView view;
+
     private Rigidbody rb;
     private float yaw;
     private float pitch;
+
+    private void Start()
+    {
+        view = GetComponent<PhotonView>();
+    }
 
     private void Awake()
     {
@@ -30,8 +38,11 @@ public class ThirdPersonController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Look();
-        Jump();
+        if (view.IsMine)
+        {
+            Look();
+            Jump();
+        }
     }
 
     private void FixedUpdate()
