@@ -40,7 +40,7 @@ public class SpawnPlayers : MonoBehaviour
         {
             Vector3 randomPosition = transform.position + new Vector3(
                 Random.Range(-areaWidth / 2f, areaWidth / 2f),
-                0f,
+                1f,
                 Random.Range(-areaLength / 2f, areaLength / 2f)
             );
 
