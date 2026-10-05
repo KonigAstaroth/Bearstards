@@ -30,12 +30,15 @@ public class ThirdPersonController : MonoBehaviour
         view = GetComponent<PhotonView>();
 
         rb.freezeRotation = true;
+
         if (!view.IsMine)
         {
             cam.gameObject.SetActive(false);
             return;
         }
 
+        cam.gameObject.SetActive(true);
+        
         yaw = transform.eulerAngles.y; 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;

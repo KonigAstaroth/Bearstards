@@ -53,5 +53,12 @@ public class HealthSystem : MonoBehaviourPun
     private void Die()
     {
         Debug.Log("Moriste");
+        SpawnPlayers spawnManager = FindAnyObjectByType<SpawnPlayers>();
+
+        if (spawnManager != null)
+        {
+            spawnManager.RespawnPlayer(gameObject);
+        }
     }
+
 }
