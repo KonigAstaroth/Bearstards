@@ -5,6 +5,8 @@ public class SpawnPlayers : MonoBehaviour
 {
     public GameObject playerPrefab;
 
+    public Camera deathCamera;
+
     public float areaWidth = 5f;
     public float areaLength = 5f;
 
@@ -12,6 +14,8 @@ public class SpawnPlayers : MonoBehaviour
     public LayerMask obstacleLayer;
 
     public int maxAttempts = 20;
+
+    [SerializeField] private RespawningUI respawnText;
 
     private void Start()
     {
@@ -28,7 +32,7 @@ public class SpawnPlayers : MonoBehaviour
         SpawnPlayer();
     }
 
-    private void SpawnPlayer()
+    public GameObject SpawnPlayer()
     {
         Debug.Log(
             $"SPAWNING PLAYER | " +
@@ -64,11 +68,12 @@ public class SpawnPlayers : MonoBehaviour
                     $"IsMine: {player.GetComponent<PhotonView>().IsMine}"
                 );
 
-                return;
+                return player;
             }
         }
+        Debug.LogWarning("No se encontró una posición válida para respawnear.");
+        return null;
 
-        Debug.LogWarning("No se encontró un punto de spawn libre.");
     }
 
     private void OnDrawGizmos()
@@ -77,5 +82,40 @@ public class SpawnPlayers : MonoBehaviour
             transform.position,
             new Vector3(areaWidth, 0.1f, areaLength)
         );
+    }
+
+    public void RespawnPlayer(GameObject oldPlayer)
+    {
+        StartCoroutine(RespawnCoroutine(oldPlayer));
+    }
+
+    private System.Collections.IEnumerator RespawnCoroutine(GameObject oldPlayer)
+    {
+        Debug.Log($"respawnText null? {respawnText == null} | objeto: {name}", this);
+        if (deathCamera != null)
+        {
+            deathCamera.gameObject.SetActive(true);
+        }
+
+        PhotonNetwork.Destroy(oldPlayer);
+
+        int waitTimeRespawn = 5;
+
+        while (waitTimeRespawn > 0)
+        {
+            respawnText.SetCountDown(waitTimeRespawn);
+            yield return new WaitForSeconds(1f);
+            waitTimeRespawn--;
+        }
+
+        respawnText.SetCountDown(0);
+        yield return new WaitForSeconds(1.5f);
+
+        if (deathCamera != null)
+        {
+            deathCamera.gameObject.SetActive(false);
+        }
+
+        SpawnPlayer();
     }
 }
