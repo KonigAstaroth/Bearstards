@@ -14,12 +14,6 @@ public class HealthSystem : MonoBehaviourPun
 
     private void Start()
     {
-
-        Debug.Log(
-            "Owner: " + photonView.IsMine +
-            " | Player: " + photonView.ViewID + 
-            " | Canvas: " + playerCanvas.name
-        );
         if (!photonView.IsMine)
         {
             playerCanvas.enabled = false;
@@ -31,7 +25,6 @@ public class HealthSystem : MonoBehaviourPun
 
     private void Awake()
     {
-        
         currentHealth = maxHealth;
     }
 
@@ -71,13 +64,17 @@ public class HealthSystem : MonoBehaviourPun
 
     private void Die()
     {
-        Debug.Log("Moriste");
         SpawnPlayers spawnManager = FindAnyObjectByType<SpawnPlayers>();
 
         if (spawnManager != null)
         {
             spawnManager.RespawnPlayer(gameObject);
         }
+    }
+
+    public bool HasFullHealth()
+    {
+        return currentHealth >= maxHealth; 
     }
 
 }

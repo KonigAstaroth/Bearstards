@@ -1,5 +1,6 @@
 using UnityEngine;
 using Photon.Pun;
+using Unity.VisualScripting;
 
 public class WeaponController : MonoBehaviourPun
 {
@@ -19,14 +20,15 @@ public class WeaponController : MonoBehaviourPun
         WeaponModel.SetActive(false);
     }
 
-    public void PickUpWeapon()
+    public bool PickUpWeapon()
     {
-        if (!photonView.IsMine)
+        if (hasWeapon || !photonView.IsMine)
         {
-            return;
+            return false;
         }
 
         photonView.RPC(nameof(ShowWeapon), RpcTarget.All);
+        return true;
     }
 
     [PunRPC]

@@ -19,6 +19,11 @@ public class HealOnCollision : MonoBehaviourPun
             return;
         }
 
+        if (health.HasFullHealth())
+        {
+            return;
+        }
+
         health.Heal(healPoints);
 
         photonView.RPC(nameof(DisableHeal), RpcTarget.All);

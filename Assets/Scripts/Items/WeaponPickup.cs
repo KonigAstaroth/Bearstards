@@ -13,13 +13,17 @@ public class WeaponPickup : MonoBehaviourPun
         }
         WeaponController weapon = other.GetComponent<WeaponController>();
 
-        if(weapon == null || photonView.IsMine)
+        if(weapon == null || !photonView.IsMine)
+        {
+            return;
+        }
+
+        if (!weapon.PickUpWeapon())
         {
             return;
         }
 
         used = true;
-        weapon.PickUpWeapon();
         photonView.RPC(nameof(DisablePickup), RpcTarget.All);
 
     }
