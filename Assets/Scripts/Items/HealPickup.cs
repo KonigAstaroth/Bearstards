@@ -4,14 +4,30 @@ using Photon.Pun;
 public class HealOnCollision : MonoBehaviourPun
 {
     [SerializeField] private int healPoints = 25;
+
+    private bool used = false;
     private void OnTriggerEnter(Collider other)
     {
-        HealthSystem health = other.GetComponent<HealthSystem>();
-        if (health != null && health.photonView.IsMine)
+        if (used)
         {
-            health.Heal(healPoints);
-            PhotonNetwork.Destroy(gameObject);
+            return;
         }
+
+        HealthSystem health = other.GetComponent<HealthSystem>();
+        if (health == null || !health.photonView.IsMine)
+        {
+            return;
+        }
+
+        health.Heal(healPoints);
+
+        photonView.RPC(nameof(DisableHeal), RpcTarget.All);
+    }
+
+    [PunRPC]
+    private void DisableHeal()
+    {
+        gameObject.SetActive(false);
     }
 }
 

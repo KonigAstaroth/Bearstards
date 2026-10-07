@@ -26,6 +26,12 @@ public class WeaponController : MonoBehaviourPun
             return;
         }
 
+        photonView.RPC(nameof(ShowWeapon), RpcTarget.All);
+    }
+
+    [PunRPC]
+    private void ShowWeapon()
+    {
         hasWeapon = true;
         WeaponModel.SetActive(true);
     }
