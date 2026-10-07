@@ -6,13 +6,20 @@ public class HealthSystem : MonoBehaviourPun
 {
 
     [Header("Health")]
-    public TextMeshProUGUI healthText;
+    [SerializeField] private GameObject playerCanvas;
+    [SerializeField] private TextMeshProUGUI healthText;
     [SerializeField] private int maxHealth = 100;
 
     private int currentHealth;
 
     private void Awake()
     {
+        if (!photonView.IsMine)
+        {
+            playerCanvas.SetActive(false);
+            healthText.gameObject.SetActive(false);
+            return;
+        }
         currentHealth = maxHealth;
     }
 
@@ -35,7 +42,6 @@ public class HealthSystem : MonoBehaviourPun
 
     private void updateHealth()
     {
-        Debug.Log("Vida: " + currentHealth);
         healthText.text = currentHealth.ToString();
     }
 
