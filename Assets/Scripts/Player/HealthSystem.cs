@@ -6,23 +6,36 @@ public class HealthSystem : MonoBehaviourPun
 {
 
     [Header("Health")]
-    [SerializeField] private GameObject playerCanvas;
+    [SerializeField] private Canvas playerCanvas;
     [SerializeField] private TextMeshProUGUI healthText;
     [SerializeField] private int maxHealth = 100;
 
     private int currentHealth;
 
-    private void Awake()
+    private void Start()
     {
+
+        Debug.Log(
+            "Owner: " + photonView.IsMine +
+            " | Player: " + photonView.ViewID + 
+            " | Canvas: " + playerCanvas.name
+        );
         if (!photonView.IsMine)
         {
-            playerCanvas.SetActive(false);
-            healthText.gameObject.SetActive(false);
+            playerCanvas.enabled = false;
             return;
         }
+
+        updateHealth();
+    }
+
+    private void Awake()
+    {
+        
         currentHealth = maxHealth;
     }
 
+    [PunRPC]
     public void TakeDamage(int _damage)
     {
 

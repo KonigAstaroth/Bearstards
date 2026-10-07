@@ -161,7 +161,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f1397014410aaa48ab3931e14378806, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NewMonoBehaviourScript
-  playerCanvas: {fileID: 2267616512727704832}
+  playerCanvas: {fileID: 7543233645080724216}
   healthText: {fileID: 6084451188960607015}
   maxHealth: 100
 --- !u!114 &2897531587722198831
@@ -182,6 +182,7 @@ MonoBehaviour:
   mouseSensitivity: 0.12
   cameraDistance: 7
   cameraHeight: 1.5
+  fallMultiplier: 2.5
 --- !u!114 &695105535260783113
 MonoBehaviour:
   m_ObjectHideFlags: 0

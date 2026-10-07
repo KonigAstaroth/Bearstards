@@ -14,7 +14,11 @@ public class DartProjectile : MonoBehaviourPun
 
         if (health != null)
         {
-            health.TakeDamage(damage);
+            health.photonView.RPC(
+                nameof(HealthSystem.TakeDamage),
+                health.photonView.Owner,
+                damage
+            );
         }
 
         PhotonNetwork.Destroy(gameObject);

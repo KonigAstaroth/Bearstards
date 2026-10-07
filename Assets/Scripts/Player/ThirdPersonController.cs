@@ -8,11 +8,13 @@ public class ThirdPersonController : MonoBehaviour
 {
     public Transform cam;
     public float moveSpeed = 6f;
-    public float jumpForce = 7f;
+    public float jumpForce = 5f;
 
     public float mouseSensitivity = 0.12f;
     public float cameraDistance = 5f;
     public float cameraHeight = 1.6f;
+
+    [SerializeField] private float fallMultiplier = 2.5f;
 
     PhotonView view;
 
@@ -59,6 +61,7 @@ public class ThirdPersonController : MonoBehaviour
         if (view.IsMine)
         {
             Move();
+            ApplyFallGravity();
         }
     }
 
@@ -98,6 +101,17 @@ public class ThirdPersonController : MonoBehaviour
         if (Keyboard.current.spaceKey.wasPressedThisFrame && IsGrounded())
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        }
+    }
+
+    private void ApplyFallGravity()
+    {
+        if (rb.linearVelocity.y < 0f)
+        {
+            rb.AddForce(
+                Physics.gravity * (fallMultiplier - 1f),
+                ForceMode.Acceleration
+            );
         }
     }
 
