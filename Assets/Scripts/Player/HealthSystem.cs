@@ -1,13 +1,13 @@
 using UnityEngine;
 using Photon.Pun;
-using TMPro;
+using UnityEngine.UI;
 
 public class HealthSystem : MonoBehaviourPun
 {
 
     [Header("Health")]
     [SerializeField] private Canvas playerCanvas;
-    [SerializeField] private TextMeshProUGUI healthText;
+    [SerializeField] private Image healthBar;
     [SerializeField] private int maxHealth = 100;
 
     private int currentHealth;
@@ -48,7 +48,10 @@ public class HealthSystem : MonoBehaviourPun
 
     private void updateHealth()
     {
-        healthText.text = currentHealth.ToString();
+        if (healthBar != null)
+        {
+            healthBar.fillAmount = Mathf.Clamp01((float)currentHealth / maxHealth);
+        }
     }
 
     public void Heal(int amount)
