@@ -1,6 +1,7 @@
 using Photon.Pun;
 using UnityEngine;
 using UnityEngine.UI;
+using WebSocketSharp;
 
 public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
 {
@@ -19,7 +20,13 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
 
         Debug.Log("Photon connected: " + PhotonNetwork.IsConnected);
         Debug.Log("Photon ready: " + PhotonNetwork.IsConnectedAndReady);
-        PhotonNetwork.CreateRoom(createInput.text);
+
+        string createRoomName = createInput.text.Trim();
+
+        if (!createRoomName.IsNullOrEmpty())
+        {
+            PhotonNetwork.CreateRoom(createRoomName);
+        }
     }
 
     public void JoinRoom()
@@ -29,12 +36,18 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
             Debug.LogWarning("Photon todavia no esta listo");
             return;
         }
-        PhotonNetwork.JoinRoom(joinInput.text);
+
+        string joinRoomName = joinInput.text.Trim();
+
+        if (!joinRoomName.IsNullOrEmpty())
+        {
+            PhotonNetwork.JoinRoom(joinRoomName);
+        }
     }
 
     public override void OnCreatedRoom()
     {
-        Debug.Log("Room creada: " + PhotonNetwork.CurrentRoom.Name);
+        Debug.Log("Created Room: " + PhotonNetwork.CurrentRoom.Name);
     }
 
     public override void OnCreateRoomFailed(short returnCode, string message)
