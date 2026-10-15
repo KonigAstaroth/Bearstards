@@ -1,6 +1,6 @@
+
 using UnityEngine;
 using Photon.Pun;
-using Unity.VisualScripting;
 
 public class WeaponController : MonoBehaviourPun
 {
@@ -12,6 +12,7 @@ public class WeaponController : MonoBehaviourPun
     [Header("Shooting")]
     [SerializeField] private Transform shootPoint;
     [SerializeField] private float shootForce = 100f;
+    [SerializeField] private int pointsPerKill = 400;
 
     private bool hasWeapon = false;
 
@@ -23,9 +24,7 @@ public class WeaponController : MonoBehaviourPun
     public bool PickUpWeapon()
     {
         if (hasWeapon || !photonView.IsMine)
-        {
             return false;
-        }
 
         photonView.RPC(nameof(ShowWeapon), RpcTarget.All);
         return true;
@@ -38,24 +37,15 @@ public class WeaponController : MonoBehaviourPun
         WeaponModel.SetActive(true);
     }
 
-    // Update is called once per frame
     private void Update()
     {
-        if (!hasWeapon)
-        {
+        if (!hasWeapon || !photonView.IsMine)
             return;
-        }
-
-        if (!photonView.IsMine)
-        {
-            return;
-        }
 
         if (Input.GetMouseButtonDown(0))
         {
             Shoot();
         }
-
     }
 
     private void Shoot()
@@ -63,7 +53,13 @@ public class WeaponController : MonoBehaviourPun
         GameObject dart = PhotonNetwork.Instantiate(
             DartPrefab.name,
             shootPoint.position,
-            shootPoint.rotation
+            shootPoint.rotation,
+            0,
+            new object[]
+            {
+                photonView.ViewID,
+                pointsPerKill
+            }
         );
 
         Rigidbody rb = dart.GetComponent<Rigidbody>();
@@ -75,6 +71,5 @@ public class WeaponController : MonoBehaviourPun
                 ForceMode.Impulse
             );
         }
-
     }
 }

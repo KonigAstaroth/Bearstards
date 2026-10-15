@@ -94,7 +94,7 @@ public class MatchManager : MonoBehaviourPunCallbacks
         );
         if (!PhotonNetwork.IsMasterClient ||
             !PhotonNetwork.InRoom ||
-            PhotonNetwork.CurrentRoom.PlayerCount < 1)
+            PhotonNetwork.CurrentRoom.PlayerCount < 2)
         {
             return;
         }

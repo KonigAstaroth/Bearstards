@@ -1,73 +1,93 @@
+
 using UnityEngine;
 using Photon.Pun;
 using UnityEngine.UI;
 
 public class HealthSystem : MonoBehaviourPun
 {
-
     [Header("Health")]
     [SerializeField] private Canvas playerCanvas;
     [SerializeField] private Image healthBar;
     [SerializeField] private int maxHealth = 100;
 
     private int currentHealth;
+    private bool isDead;
+
+    private void Awake()
+    {
+        currentHealth = maxHealth;
+        isDead = false;
+    }
 
     private void Start()
     {
         if (!photonView.IsMine)
         {
-            playerCanvas.enabled = false;
+            if (playerCanvas != null)
+                playerCanvas.enabled = false;
+
             return;
         }
 
-        updateHealth();
-    }
-
-    private void Awake()
-    {
-        currentHealth = maxHealth;
+        UpdateHealth();
     }
 
     [PunRPC]
-    public void TakeDamage(int _damage)
+    public void TakeDamage( int damage, int attackerViewID, int pointsPerKill)
     {
-
-        if (!photonView.IsMine)
-        {
+        if (!photonView.IsMine || isDead)
             return;
-        }
 
-        currentHealth -= _damage;
-        updateHealth();
+        currentHealth = Mathf.Max(0, currentHealth - damage);
+        UpdateHealth();
 
         if (currentHealth <= 0)
         {
-            Die();
+            isDead = true;
+            Die(attackerViewID, pointsPerKill);
         }
     }
 
-    private void updateHealth()
+    private void UpdateHealth()
     {
         if (healthBar != null)
         {
-            healthBar.fillAmount = Mathf.Clamp01((float)currentHealth / maxHealth);
+            healthBar.fillAmount =
+                Mathf.Clamp01((float)currentHealth / maxHealth);
         }
     }
 
     public void Heal(int amount)
     {
-        if (!photonView.IsMine)
-        {
+        if (!photonView.IsMine || isDead)
             return;
-        }
 
         currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
-        updateHealth();
+        UpdateHealth();
     }
 
-    private void Die()
+    private void Die(int attackerViewID, int pointsPerKill)
     {
-        SpawnPlayers spawnManager = FindAnyObjectByType<SpawnPlayers>();
+        Debug.Log(
+            $"PLAYER DIED | Attacker ID: {attackerViewID} | " +
+            $"Points: {pointsPerKill}"
+        );
+        
+        PhotonView attackerView = PhotonView.Find(attackerViewID);
+
+        if (attackerView != null &&
+            attackerView.OwnerActorNr != photonView.OwnerActorNr &&
+            pointsPerKill > 0)
+        {
+            attackerView.RPC(
+                nameof(ScoreManager.AwardKillPoints),
+                attackerView.Owner,
+                pointsPerKill
+            );
+        }
+
+        SpawnPlayers spawnManager =
+            FindAnyObjectByType<SpawnPlayers>();
 
         if (spawnManager != null)
         {
@@ -77,7 +97,6 @@ public class HealthSystem : MonoBehaviourPun
 
     public bool HasFullHealth()
     {
-        return currentHealth >= maxHealth; 
+        return currentHealth >= maxHealth;
     }
-
 }
