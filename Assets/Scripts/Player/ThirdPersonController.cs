@@ -1,4 +1,3 @@
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Photon.Pun;
@@ -11,8 +10,10 @@ public class ThirdPersonController : MonoBehaviour
     public float jumpForce = 5f;
 
     public float mouseSensitivity = 0.12f;
-    public float cameraDistance = 5f;
-    public float cameraHeight = 1.6f;
+    public float cameraDistance = 1f;
+    public float cameraHeight = 1.3f;
+
+    private float cameraSideOffset = 0.8f;
 
     [SerializeField] private float fallMultiplier = 2.5f;
 
@@ -126,7 +127,7 @@ public class ThirdPersonController : MonoBehaviour
         Quaternion camRotation = Quaternion.Euler(pitch, yaw, 0f);
         Vector3 focusPoint = transform.position + Vector3.up * cameraHeight;
 
-        cam.position = focusPoint - camRotation * Vector3.forward * cameraDistance;
+        cam.position = focusPoint - camRotation * Vector3.forward * cameraDistance + camRotation * Vector3.right * cameraSideOffset;
         cam.rotation = camRotation;
     }
 
