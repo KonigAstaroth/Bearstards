@@ -16,6 +16,7 @@ public class ThirdPersonController : MonoBehaviour
     private float cameraSideOffset = 0.8f;
 
     [SerializeField] private float fallMultiplier = 2.5f;
+    [SerializeField] private Animator animator;
 
     PhotonView view;
 
@@ -31,6 +32,19 @@ public class ThirdPersonController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         view = GetComponent<PhotonView>();
+
+        if (animator == null)
+        {
+            Debug.LogError("No asignaste el Animator en ThirdPersonController", this);
+        }
+        else
+        {
+            Debug.Log(
+                $"Animator encontrado: {animator.gameObject.name} | " +
+                $"Controller: {animator.runtimeAnimatorController}",
+                animator
+            );
+        }
 
         rb.freezeRotation = true;
 
@@ -54,6 +68,7 @@ public class ThirdPersonController : MonoBehaviour
         {
             Look();
             Jump();
+            UpdateAnimation();
         }
     }
 
@@ -73,6 +88,15 @@ public class ThirdPersonController : MonoBehaviour
             
             PositionCamera();
         }
+    }
+
+    private void UpdateAnimation()
+    {
+        if (animator == null || animator.runtimeAnimatorController == null) return;
+
+        Vector3 input = GetMoveInput();
+
+        animator.SetFloat("Speed", input.magnitude, 0.1f, Time.deltaTime);
     }
 
     void Look()
