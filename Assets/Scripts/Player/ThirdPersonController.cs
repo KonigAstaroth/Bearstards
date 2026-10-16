@@ -14,7 +14,11 @@ public class ThirdPersonController : MonoBehaviour
     public float cameraHeight = 1.3f;
 
     private float cameraSideOffset = 0.8f;
+    private bool wasAirborne = false;
+    private bool jumpInProgress;
 
+    [SerializeField] private float jumpAnimationDuration = 0.6f;
+    [SerializeField] private float jumpTakeoffTime = 0.3f;
     [SerializeField] private float fallMultiplier = 2.5f;
     [SerializeField] private Animator animator;
 
@@ -69,6 +73,14 @@ public class ThirdPersonController : MonoBehaviour
             Look();
             Jump();
             UpdateAnimation();
+
+            if (!jumpInProgress && wasAirborne)
+            {
+                if (!IsGrounded())
+                {
+                    animator.SetBool("IsGrounded", false);
+                }
+            }
         }
     }
 
@@ -94,9 +106,12 @@ public class ThirdPersonController : MonoBehaviour
     {
         if (animator == null || animator.runtimeAnimatorController == null) return;
 
+        // Move
         Vector3 input = GetMoveInput();
 
         animator.SetFloat("Speed", input.magnitude, 0.1f, Time.deltaTime);
+
+        // Landing
     }
 
     void Look()
@@ -123,11 +138,75 @@ public class ThirdPersonController : MonoBehaviour
 
     void Jump()
     {
-        if (Keyboard.current.spaceKey.wasPressedThisFrame && IsGrounded())
+        if (Keyboard.current.spaceKey.wasPressedThisFrame && IsGrounded() && !jumpInProgress && !wasAirborne)
         {
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            StartCoroutine(JumpRoutine());
+            
         }
     }
+
+   private System.Collections.IEnumerator JumpRoutine()
+    {
+        jumpInProgress = true;
+        wasAirborne = false;
+
+        if (animator != null)
+        {
+            animator.SetBool("IsJumping", true);
+            animator.CrossFade("jumping", 0.05f, 0, 0f);
+
+            // Esperar hasta que el oso tome impulso.
+            yield return new WaitForSeconds(jumpTakeoffTime);
+        }
+
+        // Despegar a mitad de la animación.
+        rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        wasAirborne = true;
+
+        // Dejar que termine la animación en el aire.
+        float remainingTime = Mathf.Max(
+            0f,
+            jumpAnimationDuration - jumpTakeoffTime
+        );
+
+        yield return new WaitForSeconds(remainingTime);
+        StartCoroutine(WaitForLandingRecovery());
+
+    }
+
+    private System.Collections.IEnumerator WaitForLandingRecovery()
+    {
+        // Esperar hasta tocar el suelo.
+        yield return new WaitUntil(() => IsGrounded());
+
+        if (animator != null)
+        {
+            animator.SetBool("IsGrounded", true);
+            animator.SetBool("IsJumping", false);
+
+            // Esperar a que termine la animación de aterrizaje.
+            float timeout = 3f;
+            float elapsed = 0f;
+
+            while (elapsed < timeout)
+            {
+                var state = animator.GetCurrentAnimatorStateInfo(0);
+
+                if (!animator.IsInTransition(0)
+                    && (state.IsName("idle") || state.IsName("walking")))
+                {
+                    break;
+                }
+
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+        }
+
+        wasAirborne = false;
+        jumpInProgress = false;
+    }
+
 
     private void ApplyFallGravity()
     {
@@ -142,7 +221,7 @@ public class ThirdPersonController : MonoBehaviour
 
     bool IsGrounded()
     {
-        return Physics.Raycast(transform.position, Vector3.down, 1.1f);
+        return Physics.Raycast(transform.position, Vector3.down, 1f);
     }
 
 
