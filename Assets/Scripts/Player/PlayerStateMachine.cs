@@ -26,6 +26,10 @@ public class PlayerStateMachine : MonoBehaviour
     [SerializeField] private string idleStateName = "idle";
     [SerializeField] private string walkingStateName = "walking";
     [SerializeField] private string runningStateName = "running";
+    [SerializeField] private string strafeLeftStateName = "strafe_left";
+    [SerializeField] private string strafeRightStateName = "strafe_right";
+    [SerializeField] private string runStrafeLeftStateName = "run_strafe_left";
+    [SerializeField] private string runStrafeRightStateName = "run_strafe_right";
     [SerializeField] private float recoveryTimeout = 3f;
 
     public PlayerState CurrentState { get; private set; } = PlayerState.Grounded;
@@ -55,20 +59,30 @@ public class PlayerStateMachine : MonoBehaviour
         if (view == null || !view.IsMine)
             return;
 
-        if (controller == null || animator == null)
-            return;
+        if (controller == null || animator == null) return;
 
-        // Actualizar locomoción.
+
+        float horizontal = controller.GetHorizontalInput();
+        float vertical = controller.GetVerticalInput();
+
+        bool moving = controller.GetMovementInputMagnitude() > 0.01f;
+        bool running = moving && controller.IsRunning();
+
+        float animationScale = running ? 2f : 1f;
+
         animator.SetFloat(
-            "Speed",
-            controller.GetMovementInputMagnitude(),
+            "Horizontal",
+            horizontal * animationScale,
             0.1f,
             Time.deltaTime
         );
 
-        bool canRun = CurrentState == PlayerState.Grounded && controller.IsGrounded() && controller.GetMovementInputMagnitude() > 0f;
-
-        animator.SetBool("IsRunning", canRun && controller.IsRunning());
+        animator.SetFloat(
+            "Vertical",
+            vertical * animationScale,
+            0.1f,
+            Time.deltaTime
+        );
 
         // Solo se permite iniciar un salto desde Grounded.
         if (CurrentState == PlayerState.Grounded
@@ -145,10 +159,7 @@ public class PlayerStateMachine : MonoBehaviour
             AnimatorStateInfo state =
                 animator.GetCurrentAnimatorStateInfo(0);
 
-            bool returnedToLocomotion =
-                !animator.IsInTransition(0) &&
-                (state.IsName(idleStateName) ||
-                state.IsName(walkingStateName))|| state.IsName(runningStateName);
+            bool returnedToLocomotion = !animator.IsInTransition(0) && state.IsName("Locomotion");
 
             if (returnedToLocomotion)
                 break;
