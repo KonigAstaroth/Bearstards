@@ -8,8 +8,7 @@ public class WeaponPickup : MonoBehaviourPun
 
     private void OnTriggerEnter(Collider other)
     {
-        if (used)
-            return;
+        if (used) return;
 
         WeaponController weapon =
             other.GetComponentInParent<WeaponController>();
@@ -25,9 +24,7 @@ public class WeaponPickup : MonoBehaviourPun
     }
 
     [PunRPC]
-    private void RequestPickup(
-        int playerViewID,
-        PhotonMessageInfo info)
+    private void RequestPickup( int playerViewID, PhotonMessageInfo info)
     {
         if (!PhotonNetwork.IsMasterClient || used)
             return;
@@ -38,11 +35,9 @@ public class WeaponPickup : MonoBehaviourPun
             playerView.OwnerActorNr != info.Sender.ActorNumber)
             return;
 
-        WeaponController weapon =
-            playerView.GetComponent<WeaponController>();
+        WeaponController weapon = playerView.GetComponent<WeaponController>();
 
-        if (weapon == null)
-            return;
+        if (weapon == null || weapon.HasWeapon) return;
 
         used = true;
 

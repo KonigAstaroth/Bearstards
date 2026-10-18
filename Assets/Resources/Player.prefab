@@ -22,6 +22,7 @@ GameObject:
   - component: {fileID: 1189109933154989992}
   - component: {fileID: 473363567224169108}
   - component: {fileID: 3237562304696622571}
+  - component: {fileID: -7385552671645107849}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -180,16 +181,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 573757011e245faa1b441b329c712891, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThirdPersonController
-  cam: {fileID: 4442027479006727666}
   moveSpeed: 6
-  jumpForce: 7
+  cam: {fileID: 4442027479006727666}
   mouseSensitivity: 0.12
   cameraDistance: 5
   cameraHeight: 1.5
-  jumpAnimationDuration: 0.6
-  jumpTakeoffTime: 0.1
+  cameraSideOffset: 0.8
   fallMultiplier: 2.5
-  animator: {fileID: 473363567224169108}
+  groundCheckDistance: 1
 --- !u!114 &695105535260783113
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -321,7 +320,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 760855664641151730}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9b8c4a61274f60b4ea5fb4299cfdbf14, type: 3}
   m_Name: 
@@ -333,14 +332,34 @@ MonoBehaviour:
     SynchronizeType: 2
     Name: Speed
   - Type: 4
-    SynchronizeType: 0
+    SynchronizeType: 2
     Name: IsGrounded
   - Type: 4
-    SynchronizeType: 0
+    SynchronizeType: 2
     Name: IsJumping
   m_SynchronizeLayers:
   - SynchronizeType: 2
     LayerIndex: 0
+--- !u!114 &-7385552671645107849
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 760855664641151730}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fab8b7b7491334d93905de7316f9bc33, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStateMachine
+  controller: {fileID: 2897531587722198831}
+  animator: {fileID: 473363567224169108}
+  jumpForce: 7
+  jumpTakeoffTime: 0.1
+  jumpStateName: jumping
+  idleStateName: idle
+  walkingStateName: walking
+  recoveryTimeout: 3
 --- !u!1 &1115489475328008900
 GameObject:
   m_ObjectHideFlags: 0
