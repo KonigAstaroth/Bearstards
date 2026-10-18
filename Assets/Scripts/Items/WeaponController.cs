@@ -16,6 +16,8 @@ public class WeaponController : MonoBehaviourPun
 
     private bool hasWeapon = false;
 
+    public bool HasWeapon => hasWeapon;
+
     private void Start()
     {
         WeaponModel.SetActive(false);
@@ -31,8 +33,10 @@ public class WeaponController : MonoBehaviourPun
     }
 
     [PunRPC]
-    private void ShowWeapon()
+    public void ShowWeapon()
     {
+        if(hasWeapon) return;
+
         hasWeapon = true;
         WeaponModel.SetActive(true);
     }
