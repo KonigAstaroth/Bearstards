@@ -10,11 +10,13 @@ public class PatrolNPC : MonoBehaviour
 {
     [Header("Patrulla")]
     [SerializeField] private Transform[] waypoints;
-    [SerializeField] private float waitTime = 1.5f;   // segundos de espera en cada punto
+    // [SerializeField] private float waitTime = 1.5f;   // segundos de espera en cada punto
 
     private NavMeshAgent agent;
     private int currentIndex;
     private float waitTimer;
+    private float waitTime;
+    private bool isWaiting;
 
     private void Awake()
     {
@@ -38,17 +40,26 @@ public class PatrolNPC : MonoBehaviour
         // Espera a que Unity termine de calcular la ruta
         if (agent.pathPending) return;
 
-        // ¿Llegó al waypoint actual?
-        if (agent.remainingDistance <= agent.stoppingDistance)
+        if (!isWaiting)
         {
-            waitTimer += Time.deltaTime;
-
-            if (waitTimer >= waitTime)
+            if (agent.remainingDistance <= agent.stoppingDistance)
             {
-                waitTimer = 0f;
-                currentIndex = (currentIndex + 1) % waypoints.Length; // vuelve al primero al terminar
-                agent.SetDestination(waypoints[currentIndex].position);
+                waitTimer = 0;
+                isWaiting = true;
+                waitTime = Random.Range(1.5f, 8.0f);
+                Debug.Log("Tiempo de espera creado: " + waitTime);
             }
+            return;
+        }
+        // ¿Llegó al waypoint actual?
+        waitTimer += Time.deltaTime;
+
+        if (waitTimer >= waitTime)
+        {
+            isWaiting = false;
+            waitTimer = 0f;
+            currentIndex = (currentIndex + 1) % waypoints.Length; // vuelve al primero al terminar
+            agent.SetDestination(waypoints[currentIndex].position);
         }
     }
 
