@@ -169,6 +169,16 @@ public class ThirdPersonController : MonoBehaviour
         rb.linearVelocity = velocity;
     }
 
+    public float GetHorizontalInput()
+    {
+        return moveInput.x;
+    }
+
+    public float GetVerticalInput()
+    {
+        return moveInput.z;
+    }
+
     private void ApplyFallGravity()
     {
         if (rb.linearVelocity.y < 0f)
