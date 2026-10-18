@@ -22,6 +22,10 @@ public class ThirdPersonController : MonoBehaviour
     [Header("Ground Check")]
     [SerializeField] private float groundCheckExtraDistance = 0.15f;
 
+    [Header ("Sprint")]
+    [SerializeField] private float sprintSpeed = 9f;
+    private bool isRunning;
+
     private Collider playerCollider;
 
     private Rigidbody rb;
@@ -94,6 +98,11 @@ public class ThirdPersonController : MonoBehaviour
         PositionCamera();
     }
 
+    public bool IsRunning()
+    {
+        return isRunning;
+    }
+
     private void ReadMovementInput()
     {
         moveInput = Vector3.zero;
@@ -109,6 +118,10 @@ public class ThirdPersonController : MonoBehaviour
         if (kb.aKey.isPressed) moveInput.x -= 1f;
 
         moveInput = Vector3.ClampMagnitude(moveInput, 1f);
+
+        bool shiftPressed = kb.leftShiftKey.isPressed;
+
+        isRunning = shiftPressed && moveInput.magnitude > 0f;
     }
 
     public float GetMovementInputMagnitude()
@@ -147,11 +160,10 @@ public class ThirdPersonController : MonoBehaviour
 
     private void Move()
     {
-        Vector3 moveDirection =
-            transform.forward * moveInput.z +
-            transform.right * moveInput.x;
+        Vector3 moveDirection = transform.forward * moveInput.z + transform.right * moveInput.x;
 
-        Vector3 velocity = moveDirection * moveSpeed;
+        float currentSpeed = isRunning ? sprintSpeed: moveSpeed;
+        Vector3 velocity = moveDirection * currentSpeed;
         velocity.y = rb.linearVelocity.y;
 
         rb.linearVelocity = velocity;
