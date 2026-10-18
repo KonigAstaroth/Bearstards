@@ -27,8 +27,7 @@ public class PlayerStateMachine : MonoBehaviour
     [SerializeField] private string walkingStateName = "walking";
     [SerializeField] private float recoveryTimeout = 3f;
 
-    public PlayerState CurrentState { get; private set; }
-        = PlayerState.Grounded;
+    public PlayerState CurrentState { get; private set; } = PlayerState.Grounded;
 
     private PhotonView view;
     private bool jumpRoutineRunning;
