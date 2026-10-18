@@ -25,6 +25,7 @@ public class PlayerStateMachine : MonoBehaviour
     [SerializeField] private string jumpStateName = "jumping";
     [SerializeField] private string idleStateName = "idle";
     [SerializeField] private string walkingStateName = "walking";
+    [SerializeField] private string runningStateName = "running";
     [SerializeField] private float recoveryTimeout = 3f;
 
     public PlayerState CurrentState { get; private set; }
@@ -65,6 +66,10 @@ public class PlayerStateMachine : MonoBehaviour
             0.1f,
             Time.deltaTime
         );
+
+        bool canRun = CurrentState == PlayerState.Grounded && controller.IsGrounded() && controller.GetMovementInputMagnitude() > 0f;
+
+        animator.SetBool("IsRunning", canRun && controller.IsRunning());
 
         // Solo se permite iniciar un salto desde Grounded.
         if (CurrentState == PlayerState.Grounded
@@ -144,7 +149,7 @@ public class PlayerStateMachine : MonoBehaviour
             bool returnedToLocomotion =
                 !animator.IsInTransition(0) &&
                 (state.IsName(idleStateName) ||
-                state.IsName(walkingStateName));
+                state.IsName(walkingStateName))|| state.IsName(runningStateName);
 
             if (returnedToLocomotion)
                 break;
