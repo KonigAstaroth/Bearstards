@@ -10,6 +10,7 @@ public class PatrolNPC : MonoBehaviour
 {
     [Header("Patrulla")]
     [SerializeField] private Transform[] waypoints;
+    [SerializeField] private Animator animator;
     // [SerializeField] private float waitTime = 1.5f;   // segundos de espera en cada punto
 
     private NavMeshAgent agent;
@@ -31,6 +32,8 @@ public class PatrolNPC : MonoBehaviour
             enabled = false;
             return;
         }
+        animator.SetBool("IsMoving", true);
+        animator.SetBool("IsWaiting", false);
 
         agent.SetDestination(waypoints[currentIndex].position);
     }
@@ -46,8 +49,10 @@ public class PatrolNPC : MonoBehaviour
             {
                 waitTimer = 0;
                 isWaiting = true;
+                animator.SetBool("IsWaiting", true);
+                animator.SetBool("IsMoving", false);
                 waitTime = Random.Range(1.5f, 8.0f);
-                Debug.Log("Tiempo de espera creado: " + waitTime);
+                
             }
             return;
         }
@@ -58,6 +63,8 @@ public class PatrolNPC : MonoBehaviour
         {
             isWaiting = false;
             waitTimer = 0f;
+            animator.SetBool("IsMoving", true);
+            animator.SetBool("IsWaiting", false);
             currentIndex = (currentIndex + 1) % waypoints.Length; // vuelve al primero al terminar
             agent.SetDestination(waypoints[currentIndex].position);
         }
