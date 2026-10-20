@@ -14,6 +14,8 @@ public class WeaponController : MonoBehaviourPun
     [SerializeField] private float shootForce = 100f;
     [SerializeField] private int pointsPerKill = 400;
 
+    private int ammunition = 6;
+
     private bool hasWeapon = false;
 
     public bool HasWeapon => hasWeapon;
@@ -54,6 +56,8 @@ public class WeaponController : MonoBehaviourPun
 
     private void Shoot()
     {
+        if (ammunition <= 0) return;
+            
         GameObject dart = PhotonNetwork.Instantiate(
             DartPrefab.name,
             shootPoint.position,
@@ -75,5 +79,8 @@ public class WeaponController : MonoBehaviourPun
                 ForceMode.Impulse
             );
         }
+
+        ammunition--;
+        
     }
 }
