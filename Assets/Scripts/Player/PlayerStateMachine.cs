@@ -32,10 +32,15 @@ public class PlayerStateMachine : MonoBehaviour
     [SerializeField] private string runStrafeRightStateName = "run_strafe_right";
     [SerializeField] private float recoveryTimeout = 3f;
 
+    [Header("Animación de arma")]
+    [SerializeField] private string upperBodyLayerName = "UpperBody";
+
     public PlayerState CurrentState { get; private set; } = PlayerState.Grounded;
 
     private PhotonView view;
     private bool jumpRoutineRunning;
+    private int upperBodyLayerIndex;
+    [SerializeField] private WeaponController weaponController;
 
     private void Awake()
     {
@@ -52,6 +57,13 @@ public class PlayerStateMachine : MonoBehaviour
 
         if (animator == null)
             Debug.LogError("Falta el Animator del jugador.", this);
+
+        upperBodyLayerIndex = animator.GetLayerIndex(upperBodyLayerName);
+
+        if (upperBodyLayerIndex == -1)
+        {
+            Debug.LogError($"No existe la capa {upperBodyLayerName} en el Animator.");
+        }
     }
 
     private void Update()
@@ -61,6 +73,8 @@ public class PlayerStateMachine : MonoBehaviour
 
         if (controller == null || animator == null) return;
 
+        if (weaponController == null || upperBodyLayerIndex == null)
+            return;
 
         float horizontal = controller.GetHorizontalInput();
         float vertical = controller.GetVerticalInput();
@@ -84,6 +98,14 @@ public class PlayerStateMachine : MonoBehaviour
             Time.deltaTime
         );
 
+        if (upperBodyLayerIndex >= 0 && weaponController != null)
+        {
+            animator.SetLayerWeight(
+                upperBodyLayerIndex,
+                weaponController.HasWeapon ? 1f : 0f
+            );
+        }
+
         // Solo se permite iniciar un salto desde Grounded.
         if (CurrentState == PlayerState.Grounded
             && !jumpRoutineRunning
@@ -93,6 +115,8 @@ public class PlayerStateMachine : MonoBehaviour
         {
             StartCoroutine(JumpRoutine());
         }
+
+
     }
 
     private IEnumerator JumpRoutine()
