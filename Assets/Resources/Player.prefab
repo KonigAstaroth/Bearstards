@@ -259,12 +259,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa487142f8884f78abeafdafe170796f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponController
+  NeedleModel: {fileID: 6018494916580295534}
   WeaponModel: {fileID: 9173044130010709912}
-  WeaponPoint: {fileID: 8894798764019414209}
+  needleMelee: {fileID: 2170661900886579997}
   DartPrefab: {fileID: 3960909024417016728, guid: 9b289deb31d17af17bbb7fdc1f9aad55, type: 3}
   shootPoint: {fileID: 7288812911595802113}
   shootForce: 20
   pointsPerKill: 400
+  maxAmmunition: 6
 --- !u!114 &9159503761632515982
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -755,14 +757,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1972891561183106600}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.6717218, y: -0.019190777, z: 0.66577625, w: 0.32428923}
-  m_LocalPosition: {x: 0.124, y: 0.779, z: 0.237}
+  m_LocalRotation: {x: -0.9465328, y: 0.12758367, z: -0.13009343, w: 0.26622128}
+  m_LocalPosition: {x: 0.07, y: 0.853, z: 0.141}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6399102225023703508}
   m_Father: {fileID: 3137489639023262323}
-  m_LocalEulerAnglesHint: {x: -155.788, y: 96.095, z: -30.114014}
+  m_LocalEulerAnglesHint: {x: -151.91501, y: -20.863007, z: 20.626007}
 --- !u!1 &2267616512727704832
 GameObject:
   m_ObjectHideFlags: 0
@@ -1661,8 +1663,12 @@ MonoBehaviour:
   playerView: {fileID: 695105535260783113}
   hitbox: {fileID: 4351171249961303452}
   damage: 25
+  pointsPerKill: 200
   attackDuration: 0.2
   attackCooldown: 0.6
+  animator: {fileID: 473363567224169108}
+  attackStateName: slash
+  crossFadeDuration: 0.05
 --- !u!4 &6399102225023703508 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 9e22a7ebe8c15ff41b94e9270b01d1ed, type: 3}

@@ -13,8 +13,16 @@ public class NeedleMelee : MonoBehaviourPun
 
     [Header("Combate")]
     [SerializeField] private int damage = 25;
+    [SerializeField] private int pointsPerKill = 200;
     [SerializeField] private float attackDuration = 0.2f;
     [SerializeField] private float attackCooldown = 0.6f;
+
+    [Header("Animación")]
+    [SerializeField] private Animator animator;
+    [SerializeField] private string attackStateName = "slash";
+    [SerializeField] private float crossFadeDuration = 0.05f;
+
+    private int upperBodyLayerIndex = -1;
 
     private bool isAttacking;
     private float nextAttackTime;
@@ -29,6 +37,12 @@ public class NeedleMelee : MonoBehaviourPun
 
         if (hitbox != null)
             hitbox.enabled = false;
+
+        if (animator == null)
+            animator = GetComponentInParent<Animator>();
+
+        if (animator != null)
+            upperBodyLayerIndex = animator.GetLayerIndex("UpperBody");
     }
 
     private void Update()
@@ -50,6 +64,25 @@ public class NeedleMelee : MonoBehaviourPun
 
         if (isAttacking || Time.time < nextAttackTime)
             return;
+
+        if (animator == null)
+        {
+            Debug.LogError("NeedleMelee: no hay Animator asignado.");
+            return;
+        }
+
+        if (upperBodyLayerIndex < 0)
+        {
+            Debug.LogError("NeedleMelee: no se encontró la capa UpperBody.");
+            return;
+        }
+
+        Debug.Log(
+            $"Ataque iniciado. Estado: {attackStateName}, " +
+            $"Capa: {upperBodyLayerIndex}"
+        );
+
+        animator.Play("slash", upperBodyLayerIndex, 0f);
 
         StartCoroutine(AttackRoutine());
     }

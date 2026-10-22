@@ -102,7 +102,9 @@ public class PlayerStateMachine : MonoBehaviour
         {
             animator.SetLayerWeight(
                 upperBodyLayerIndex,
-                weaponController.HasWeapon ? 1f : 0f
+                weaponController.CurrentWeapon != WeaponController.WeaponType.None
+                    ? 1f
+                    : 0f
             );
         }
 

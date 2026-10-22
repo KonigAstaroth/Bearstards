@@ -4,17 +4,50 @@ using Photon.Pun;
 
 public class WeaponPickup : MonoBehaviourPun
 {
-    private bool used = false;
+    public enum PickupType
+    {
+        Needle,
+        Pistol
+    }
+
+    [Header("Configuración")]
+    [SerializeField] private PickupType pickupType;
+    [SerializeField] private bool canBeDestroyed;
+
+    private bool used;
 
     private void OnTriggerEnter(Collider other)
     {
-        if (used) return;
+        if ((canBeDestroyed && used) || !PhotonNetwork.InRoom)
+            return;
 
         WeaponController weapon =
             other.GetComponentInParent<WeaponController>();
 
-        if (weapon == null || !weapon.photonView.IsMine)
+        if (weapon == null || weapon.photonView == null)
             return;
+
+        if (!weapon.photonView.IsMine)
+            return;
+
+        // No volver a recoger una pistola ya equipada.
+        if (pickupType == PickupType.Pistol &&
+            !weapon.CanPickUpPistol())
+            return;
+
+        // La aguja no reemplaza una pistola.
+        if (pickupType == PickupType.Needle &&
+            !weapon.CanPickUpNeedle())
+            return;
+
+        if (photonView == null || photonView.ViewID == 0)
+        {
+            Debug.LogError(
+                $"El pickup {name} no tiene un PhotonView con ID válido.",
+                this
+            );
+            return;
+        }
 
         photonView.RPC(
             nameof(RequestPickup),
@@ -24,9 +57,12 @@ public class WeaponPickup : MonoBehaviourPun
     }
 
     [PunRPC]
-    private void RequestPickup( int playerViewID, PhotonMessageInfo info)
+    private void RequestPickup(
+        int playerViewID,
+        PhotonMessageInfo info)
     {
-        if (!PhotonNetwork.IsMasterClient || used)
+        if (!PhotonNetwork.IsMasterClient ||
+            (canBeDestroyed && used))
             return;
 
         PhotonView playerView = PhotonView.Find(playerViewID);
@@ -35,34 +71,58 @@ public class WeaponPickup : MonoBehaviourPun
             playerView.OwnerActorNr != info.Sender.ActorNumber)
             return;
 
-        WeaponController weapon = playerView.GetComponent<WeaponController>();
+        WeaponController weapon =
+            playerView.GetComponent<WeaponController>();
 
-        if (weapon == null || weapon.HasWeapon) return;
+        if (weapon == null)
+            return;
 
-        used = true;
+        if (pickupType == PickupType.Pistol &&
+            !weapon.CanPickUpPistol())
+            return;
+
+        if (pickupType == PickupType.Needle &&
+            !weapon.CanPickUpNeedle())
+            return;
+
+        if (canBeDestroyed)
+            used = true;
 
         photonView.RPC(
             nameof(GrantPickup),
             RpcTarget.All,
-            playerViewID
+            playerViewID,
+            (int)pickupType
         );
     }
 
     [PunRPC]
-    private void GrantPickup(int playerViewID)
+    private void GrantPickup(int playerViewID, int type)
     {
-        used = true;
+        if (canBeDestroyed && used == false)
+            used = true;
 
         PhotonView playerView = PhotonView.Find(playerViewID);
 
         if (playerView != null)
         {
-            playerView.RPC(
-                "ShowWeapon",
-                RpcTarget.All
-            );
+            if ((PickupType)type == PickupType.Needle)
+            {
+                playerView.RPC(
+                    nameof(WeaponController.EquipNeedle),
+                    RpcTarget.All
+                );
+            }
+            else
+            {
+                playerView.RPC(
+                    nameof(WeaponController.ShowWeapon),
+                    RpcTarget.All
+                );
+            }
         }
 
-        gameObject.SetActive(false);
+        if (canBeDestroyed)
+            gameObject.SetActive(false);
     }
 }

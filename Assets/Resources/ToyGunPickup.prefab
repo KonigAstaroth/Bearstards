@@ -196,6 +196,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8c8ee382ff4bc5caacc67ca14daac5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponPickup
+  pickupType: 1
+  canBeDestroyed: 1
 --- !u!114 &-6212499482267986612
 MonoBehaviour:
   m_ObjectHideFlags: 0

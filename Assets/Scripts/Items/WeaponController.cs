@@ -4,60 +4,115 @@ using Photon.Pun;
 
 public class WeaponController : MonoBehaviourPun
 {
-    [Header("Weapon")]
-    [SerializeField] private GameObject WeaponModel;
-    [SerializeField] private Transform WeaponPoint;
-    [SerializeField] private GameObject DartPrefab;
+    public enum WeaponType
+    {
+        None,
+        Needle,
+        Pistol
+    }
 
-    [Header("Shooting")]
+    [Header("Modelos")]
+    [SerializeField] private GameObject NeedleModel;
+    [SerializeField] private GameObject WeaponModel;
+
+    [Header("Combate cuerpo a cuerpo")]
+    [SerializeField] private NeedleMelee needleMelee;
+
+    [Header("Pistola")]
+    [SerializeField] private GameObject DartPrefab;
     [SerializeField] private Transform shootPoint;
     [SerializeField] private float shootForce = 100f;
     [SerializeField] private int pointsPerKill = 400;
+    [SerializeField] private int maxAmmunition = 6;
 
-    private int ammunition = 6;
+    private int ammunition;
+    private WeaponType currentWeapon = WeaponType.None;
 
-    private bool hasWeapon = false;
+    public bool HasWeapon => currentWeapon == WeaponType.Pistol;
+    public bool HasNeedle => currentWeapon == WeaponType.Needle;
+    public WeaponType CurrentWeapon => currentWeapon;
 
-    public bool HasWeapon => hasWeapon;
+    private void Awake()
+    {
+        ammunition = maxAmmunition;
+
+        if (needleMelee == null)
+            needleMelee = GetComponentInChildren<NeedleMelee>(true);
+    }
 
     private void Start()
     {
-        WeaponModel.SetActive(false);
+        UpdateWeaponModels();
     }
 
-    public bool PickUpWeapon()
+    private void UpdateWeaponModels()
     {
-        if (hasWeapon || !photonView.IsMine)
-            return false;
+        if (NeedleModel != null)
+            NeedleModel.SetActive(currentWeapon == WeaponType.Needle);
 
-        photonView.RPC(nameof(ShowWeapon), RpcTarget.All);
-        return true;
+        if (WeaponModel != null)
+            WeaponModel.SetActive(currentWeapon == WeaponType.Pistol);
+    }
+
+    public bool CanPickUpNeedle()
+    {
+        // La pistola tiene prioridad sobre la aguja.
+        return currentWeapon != WeaponType.Pistol;
+    }
+
+    public bool CanPickUpPistol()
+    {
+        // No se recoge otra pistola si ya tiene una.
+        return currentWeapon != WeaponType.Pistol;
+    }
+
+    [PunRPC]
+    public void EquipNeedle()
+    {
+        if (currentWeapon == WeaponType.Pistol)
+            return;
+
+        currentWeapon = WeaponType.Needle;
+        UpdateWeaponModels();
     }
 
     [PunRPC]
     public void ShowWeapon()
     {
-        if(hasWeapon) return;
-
-        hasWeapon = true;
-        WeaponModel.SetActive(true);
+        currentWeapon = WeaponType.Pistol;
+        UpdateWeaponModels();
     }
 
     private void Update()
     {
-        if (!hasWeapon || !photonView.IsMine)
+        if (!photonView.IsMine)
             return;
 
-        if (Input.GetMouseButtonDown(0))
+        if (!Input.GetMouseButtonDown(0))
+            return;
+
+        switch (currentWeapon)
         {
-            Shoot();
+            case WeaponType.Needle:
+                if (needleMelee != null)
+                    needleMelee.TryAttack();
+                break;
+
+            case WeaponType.Pistol:
+                Shoot();
+                break;
+
+            case WeaponType.None:
+                // Sin arma no puede atacar.
+                break;
         }
     }
 
     private void Shoot()
     {
-        if (ammunition <= 0) return;
-            
+        if (ammunition <= 0 || DartPrefab == null || shootPoint == null)
+            return;
+
         GameObject dart = PhotonNetwork.Instantiate(
             DartPrefab.name,
             shootPoint.position,
@@ -81,6 +136,5 @@ public class WeaponController : MonoBehaviourPun
         }
 
         ammunition--;
-        
     }
 }
