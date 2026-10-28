@@ -15,6 +15,12 @@ public class ThirdPersonController : MonoBehaviour
     public float cameraHeight = 1.3f;
     [SerializeField] private float cameraSideOffset = 0.8f;
 
+    [Header("Sprint Camera")]
+    [SerializeField] private float sprintCameraDistance = 2f;
+    [SerializeField] private float cameraTransitionSpeed = 4f;
+
+    private float currentCameraDistance;
+
     [Header("Physics")]
     [SerializeField] private float fallMultiplier = 2.5f;
     [SerializeField] private float groundCheckDistance = 1f;
@@ -67,6 +73,7 @@ public class ThirdPersonController : MonoBehaviour
             cam.gameObject.SetActive(true);
 
         yaw = transform.eulerAngles.y;
+        currentCameraDistance = cameraDistance;
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -206,6 +213,14 @@ public class ThirdPersonController : MonoBehaviour
 
     private void PositionCamera()
     {
+        float targetDistance = isRunning ? sprintCameraDistance : cameraDistance;
+
+        currentCameraDistance = Mathf.Lerp(
+            currentCameraDistance,
+            targetDistance,
+            1f - Mathf.Exp(-cameraTransitionSpeed * Time.deltaTime)
+        );
+
         Quaternion camRotation = Quaternion.Euler(pitch, yaw, 0f);
 
         Vector3 focusPoint =
@@ -213,7 +228,7 @@ public class ThirdPersonController : MonoBehaviour
 
         cam.position =
             focusPoint
-            - camRotation * Vector3.forward * cameraDistance
+            - camRotation * Vector3.forward * currentCameraDistance
             + camRotation * Vector3.right * cameraSideOffset;
 
         cam.rotation = camRotation;

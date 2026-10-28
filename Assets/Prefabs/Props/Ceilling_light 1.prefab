@@ -26,7 +26,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
   m_LocalPosition: {x: -19.54, y: 11.336, z: 5.73}
-  m_LocalScale: {x: 3, y: 3, z: 3}
+  m_LocalScale: {x: 4, y: 4, z: 4}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 9187318126706860775}
@@ -87,7 +87,7 @@ PrefabInstance:
     - target: {fileID: -7511558181221131132, guid: 98d98979c800c8e42bcaf1ba66b8bbcd, type: 3}
       propertyPath: 'm_Materials.Array.data[2]'
       value: 
-      objectReference: {fileID: 2100000, guid: 3a0741619333d5a69b128356102a17cf, type: 2}
+      objectReference: {fileID: -9195382623212902931, guid: 98d98979c800c8e42bcaf1ba66b8bbcd, type: 3}
     - target: {fileID: 919132149155446097, guid: 98d98979c800c8e42bcaf1ba66b8bbcd, type: 3}
       propertyPath: m_Name
       value: ceiling_light

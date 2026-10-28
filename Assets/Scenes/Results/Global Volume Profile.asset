@@ -15,7 +15,7 @@ MonoBehaviour:
   active: 1
   mode:
     m_OverrideState: 1
-    m_Value: 2
+    m_Value: 1
   neutralHDRRangeReductionMode:
     m_OverrideState: 0
     m_Value: 2
@@ -54,19 +54,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.ColorAdjustments
   active: 1
   postExposure:
-    m_OverrideState: 0
-    m_Value: -0.2
+    m_OverrideState: 1
+    m_Value: -0.4
   contrast:
     m_OverrideState: 1
-    m_Value: 44
+    m_Value: 19
   colorFilter:
     m_OverrideState: 1
-    m_Value: {r: 0.6949537, g: 0.8089551, b: 0.9150943, a: 1}
+    m_Value: {r: 0.7137255, g: 0.8745098, b: 0.99215686, a: 1}
   hueShift:
     m_OverrideState: 0
     m_Value: 0
   saturation:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 11
 --- !u!114 &-5159567517423820940
 MonoBehaviour:
@@ -89,9 +89,9 @@ MonoBehaviour:
     m_Value: {x: 0.5, y: 0.5}
   intensity:
     m_OverrideState: 1
-    m_Value: 0.419
+    m_Value: 0.335
   smoothness:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 0.176
   rounded:
     m_OverrideState: 0
@@ -114,13 +114,13 @@ MonoBehaviour:
     m_Value: 1
   threshold:
     m_OverrideState: 1
-    m_Value: 1.2
+    m_Value: 1
   intensity:
     m_OverrideState: 1
-    m_Value: 1.5
+    m_Value: 0.25
   scatter:
     m_OverrideState: 1
-    m_Value: 0.65
+    m_Value: 0.31
   clamp:
     m_OverrideState: 0
     m_Value: 65472
@@ -164,6 +164,53 @@ MonoBehaviour:
   - {fileID: -7327170023551429037}
   - {fileID: -4868184436218356160}
   - {fileID: 3549397196994160994}
+  - {fileID: 313220739088434306}
+--- !u!114 &313220739088434306
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c01700fd266d6914ababb731e09af2eb, type: 3}
+  m_Name: DepthOfField
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.DepthOfField
+  active: 1
+  mode:
+    m_OverrideState: 1
+    m_Value: 1
+  gaussianStart:
+    m_OverrideState: 1
+    m_Value: 30
+  gaussianEnd:
+    m_OverrideState: 1
+    m_Value: 60
+  gaussianMaxRadius:
+    m_OverrideState: 0
+    m_Value: 1
+  highQualitySampling:
+    m_OverrideState: 0
+    m_Value: 0
+  focusDistance:
+    m_OverrideState: 0
+    m_Value: 10
+  aperture:
+    m_OverrideState: 0
+    m_Value: 5.6
+  focalLength:
+    m_OverrideState: 0
+    m_Value: 50
+  bladeCount:
+    m_OverrideState: 0
+    m_Value: 5
+  bladeCurvature:
+    m_OverrideState: 0
+    m_Value: 1
+  bladeRotation:
+    m_OverrideState: 0
+    m_Value: 0
 --- !u!114 &3549397196994160994
 MonoBehaviour:
   m_ObjectHideFlags: 3
