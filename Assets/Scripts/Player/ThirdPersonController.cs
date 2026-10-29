@@ -30,6 +30,9 @@ public class ThirdPersonController : MonoBehaviour
 
     [Header ("Sprint")]
     [SerializeField] private float sprintSpeed = 9f;
+
+    [Header("Particles")]
+    [SerializeField] private ParticleSystem runDust;
     private bool isRunning;
 
     private Collider playerCollider;
@@ -85,6 +88,7 @@ public class ThirdPersonController : MonoBehaviour
             return;
 
         ReadMovementInput();
+        RunDustParticles();
         Look();
     }
 
@@ -232,5 +236,18 @@ public class ThirdPersonController : MonoBehaviour
             + camRotation * Vector3.right * cameraSideOffset;
 
         cam.rotation = camRotation;
+    }
+
+    public void RunDustParticles()
+    {
+        if (runDust == null) return;
+
+        if (isRunning && !runDust.isPlaying)
+        {
+            runDust.Play();
+        }else if(!isRunning && runDust.isPlaying)
+        {
+            runDust.Stop(false, ParticleSystemStopBehavior.StopEmitting);
+        }
     }
 }
