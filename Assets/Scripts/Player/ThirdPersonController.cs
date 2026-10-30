@@ -242,7 +242,7 @@ public class ThirdPersonController : MonoBehaviour
     {
         if (runDust == null) return;
 
-        if (isRunning && !runDust.isPlaying)
+        if (isRunning && !runDust.isPlaying && IsGrounded())
         {
             runDust.Play();
         }else if(!isRunning && runDust.isPlaying)

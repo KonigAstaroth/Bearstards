@@ -1,50 +1,93 @@
+
 using UnityEngine;
 using Photon.Pun;
+using System.Collections;
 
 public class SpawnPlayers : MonoBehaviour
 {
+    [Header("Player")]
     public GameObject playerPrefab;
 
-    public Camera deathCamera;
-
+    [Header("Spawn")]
     public float areaWidth = 5f;
     public float areaLength = 5f;
-
     public float playerRadius = 0.4f;
     public LayerMask obstacleLayer;
-
     public int maxAttempts = 20;
 
-    [SerializeField] private RespawningUI respawnText;
+    [Header("Respawn")]
+    public float waitTimeRespawn = 7f;
+    public RespawningUI respawnText;
+    public Camera deathCamera;
+
+    private bool isRespawning;
 
     private void Start()
     {
         StartCoroutine(WaitForRoom());
     }
 
-    private System.Collections.IEnumerator WaitForRoom()
+    private IEnumerator WaitForRoom()
     {
         while (!PhotonNetwork.InRoom)
-        {
             yield return null;
-        }
 
         SpawnPlayer();
     }
 
-    public GameObject SpawnPlayer()
+    public void RespawnPlayer(GameObject deadPlayer)
     {
-        Debug.Log(
-            $"SPAWNING PLAYER | " +
-            $"InRoom: {PhotonNetwork.InRoom} | " +
-            $"Actor: {PhotonNetwork.LocalPlayer.ActorNumber}"
-        );
+        if (isRespawning || deadPlayer == null)
+            return;
+
+        PhotonView view = deadPlayer.GetComponent<PhotonView>();
+
+        if (view == null || !view.IsMine)
+            return;
+
+        isRespawning = true;
+        StartCoroutine(RespawnCoroutine(deadPlayer));
+    }
+
+    private IEnumerator RespawnCoroutine(GameObject deadPlayer)
+    {
+        if (deathCamera != null)
+            deathCamera.enabled = true;
+
+        PhotonNetwork.Destroy(deadPlayer);
+
+        float remaining = waitTimeRespawn;
+
+        while (remaining > 0f)
+        {
+            if (respawnText != null)
+                respawnText.SetCountDown(Mathf.CeilToInt(remaining));
+
+            yield return new WaitForSeconds(1f);
+            remaining -= 1f;
+        }
+
+        if (respawnText != null)
+            respawnText.SetCountDown(0);
+
+        SpawnPlayer();
+
+        if (deathCamera != null)
+            deathCamera.enabled = false;
+
+        isRespawning = false;
+    }
+
+    private void SpawnPlayer()
+    {
+        if (!PhotonNetwork.InRoom)
+            return;
 
         for (int i = 0; i < maxAttempts; i++)
         {
             Vector3 randomPosition = transform.position + new Vector3(
                 Random.Range(-areaWidth / 2f, areaWidth / 2f),
-                1f,
+                0f,
                 Random.Range(-areaLength / 2f, areaLength / 2f)
             );
 
@@ -54,26 +97,25 @@ public class SpawnPlayers : MonoBehaviour
                 obstacleLayer
             );
 
-            if (!occupied)
-            {
-                GameObject player = PhotonNetwork.Instantiate(
-                    playerPrefab.name,
-                    randomPosition,
-                    Quaternion.identity
-                );
+            if (occupied)
+                continue;
 
-                Debug.Log(
-                    $"PLAYER CREATED | " +
-                    $"ViewID: {player.GetComponent<PhotonView>().ViewID} | " +
-                    $"IsMine: {player.GetComponent<PhotonView>().IsMine}"
-                );
+            GameObject player = PhotonNetwork.Instantiate(
+                playerPrefab.name,
+                randomPosition,
+                Quaternion.identity
+            );
 
-                return player;
-            }
+            Debug.Log(
+                $"PLAYER CREATED | " +
+                $"ViewID: {player.GetComponent<PhotonView>().ViewID} | " +
+                $"IsMine: {player.GetComponent<PhotonView>().IsMine}"
+            );
+
+            return;
         }
-        Debug.LogWarning("No se encontró una posición válida para respawnear.");
-        return null;
 
+        Debug.LogWarning("No se encontró un punto de spawn libre.");
     }
 
     private void OnDrawGizmos()
@@ -82,40 +124,5 @@ public class SpawnPlayers : MonoBehaviour
             transform.position,
             new Vector3(areaWidth, 0.1f, areaLength)
         );
-    }
-
-    public void RespawnPlayer(GameObject oldPlayer)
-    {
-        StartCoroutine(RespawnCoroutine(oldPlayer));
-    }
-
-    private System.Collections.IEnumerator RespawnCoroutine(GameObject oldPlayer)
-    {
-        Debug.Log($"respawnText null? {respawnText == null} | objeto: {name}", this);
-        if (deathCamera != null)
-        {
-            deathCamera.gameObject.SetActive(true);
-        }
-
-        PhotonNetwork.Destroy(oldPlayer);
-
-        int waitTimeRespawn = 5;
-
-        while (waitTimeRespawn > 0)
-        {
-            respawnText.SetCountDown(waitTimeRespawn);
-            yield return new WaitForSeconds(1f);
-            waitTimeRespawn--;
-        }
-
-        respawnText.SetCountDown(0);
-        yield return new WaitForSeconds(1.5f);
-
-        if (deathCamera != null)
-        {
-            deathCamera.gameObject.SetActive(false);
-        }
-
-        SpawnPlayer();
     }
 }
