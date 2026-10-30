@@ -25,6 +25,7 @@ public class SpawnPlayers : MonoBehaviour
     private void Start()
     {
         StartCoroutine(WaitForRoom());
+        deathCamera.enabled = false;
     }
 
     private IEnumerator WaitForRoom()

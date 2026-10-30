@@ -10,13 +10,22 @@ public class HealthSystem : MonoBehaviourPun
     [SerializeField] private Image healthBar;
     [SerializeField] private int maxHealth = 100;
 
+    [Header("Shield")]
+    [SerializeField] private int shieldAmount = 50;
+    [SerializeField] private GameObject helmetModel;
+
     private int currentHealth;
+    private int currentShield;
     private bool isDead;
 
     private void Awake()
     {
         currentHealth = maxHealth;
+        currentShield = 0;
         isDead = false;
+
+        if (helmetModel != null)
+            helmetModel.SetActive(false);
     }
 
     private void Start()
@@ -33,12 +42,27 @@ public class HealthSystem : MonoBehaviourPun
     }
 
     [PunRPC]
-    public void TakeDamage( int damage, int attackerViewID, int pointsPerKill)
+    public void TakeDamage(int damage, int attackerViewID, int pointsPerKill)
     {
-        if (!photonView.IsMine || isDead)
+        if (!photonView.IsMine || isDead || damage <= 0)
             return;
 
-        currentHealth = Mathf.Max(0, currentHealth - damage);
+        int absorbedDamage = Mathf.Min(currentShield, damage);
+
+        currentShield -= absorbedDamage;
+        damage -= absorbedDamage;
+
+        if (damage > 0)
+        {
+            currentHealth = Mathf.Max(0, currentHealth - damage);
+        }
+
+        // 3. Ocultar el casco cuando el escudo se agote.
+        if (currentShield <= 0 && helmetModel != null)
+        {
+            helmetModel.SetActive(false);
+        }
+
         UpdateHealth();
 
         if (currentHealth <= 0)
@@ -59,11 +83,32 @@ public class HealthSystem : MonoBehaviourPun
 
     public void Heal(int amount)
     {
-        if (!photonView.IsMine || isDead)
+        if (!photonView.IsMine || isDead || amount <= 0)
             return;
 
         currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
         UpdateHealth();
+    }
+
+    public void ActivateShield()
+    {
+        if (!photonView.IsMine || isDead)
+            return;
+
+        currentShield = shieldAmount;
+
+        if (helmetModel != null)
+            helmetModel.SetActive(true);
+    }
+
+    public int GetCurrentShield()
+    {
+        return currentShield;
+    }
+
+    public bool HasFullHealth()
+    {
+        return currentHealth >= maxHealth;
     }
 
     private void Die(int attackerViewID, int pointsPerKill)
@@ -72,7 +117,7 @@ public class HealthSystem : MonoBehaviourPun
             $"PLAYER DIED | Attacker ID: {attackerViewID} | " +
             $"Points: {pointsPerKill}"
         );
-        
+
         PhotonView attackerView = PhotonView.Find(attackerViewID);
 
         if (attackerView != null &&
@@ -93,10 +138,5 @@ public class HealthSystem : MonoBehaviourPun
         {
             spawnManager.RespawnPlayer(gameObject);
         }
-    }
-
-    public bool HasFullHealth()
-    {
-        return currentHealth >= maxHealth;
     }
 }
