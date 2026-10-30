@@ -2503,6 +2503,8 @@ MonoBehaviour:
   playerCanvas: {fileID: 7543233645080724216}
   healthBar: {fileID: 279961000400319845}
   maxHealth: 100
+  shieldAmount: 50
+  helmetModel: {fileID: 5641254616868959770}
 --- !u!114 &2897531587722198831
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3919,6 +3921,11 @@ PrefabInstance:
 --- !u!4 &4972558395903175840 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 64a688c43bb25d603bff087f81331a8c, type: 3}
+  m_PrefabInstance: {fileID: 4794269813684603723}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &5641254616868959770 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 64a688c43bb25d603bff087f81331a8c, type: 3}
   m_PrefabInstance: {fileID: 4794269813684603723}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &6864775476126055999

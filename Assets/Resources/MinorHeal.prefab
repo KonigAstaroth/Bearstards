@@ -9,6 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8429817967054746106}
+  - component: {fileID: 6564178661305178497}
+  - component: {fileID: 2863532412368003260}
+  - component: {fileID: 5871956147471779949}
   m_Layer: 0
   m_Name: MinorHeal
   m_TagString: Untagged
@@ -30,9 +33,67 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6382291596809185557}
-  - {fileID: 5772721856159497779}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &6564178661305178497
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6826196151463774761}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.45761108, y: 0.37104124, z: 0.47718138}
+  m_Center: {x: -0.0036849976, y: 0.20062837, z: 0.009750485}
+--- !u!114 &2863532412368003260
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6826196151463774761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c54c8afad9d38284b6082f1f485ee44, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HealOnCollision
+  healPoints: 25
+  pickupCollider: {fileID: 6564178661305178497}
+  healModel: {fileID: 6042041557794026415}
+  RespawnTime: 20
+--- !u!114 &5871956147471779949
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6826196151463774761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonView
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 0
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1 &7920280171293538732
 GameObject:
   m_ObjectHideFlags: 0
@@ -59,12 +120,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7920280171293538732}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.074, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071067}
+  m_LocalPosition: {x: 0, y: 0, z: 0.0049333326}
+  m_LocalScale: {x: 0.06666666, y: 0.06666668, z: 0.06666668}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 8429817967054746106}
+  m_Father: {fileID: 6382291596809185557}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!108 &6464797097306081334
 Light:
@@ -214,54 +275,17 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 043e7f36f110ab6198deda22b90677d5, type: 3}
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 043e7f36f110ab6198deda22b90677d5, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2361335407033398109}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 043e7f36f110ab6198deda22b90677d5, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 8452345257663627690}
+      addedObject: {fileID: 5772721856159497779}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 043e7f36f110ab6198deda22b90677d5, type: 3}
 --- !u!1 &6042041557794026415 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 043e7f36f110ab6198deda22b90677d5, type: 3}
   m_PrefabInstance: {fileID: 6852452340410666750}
   m_PrefabAsset: {fileID: 0}
---- !u!65 &2361335407033398109
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6042041557794026415}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.03, y: 0.03, z: 0.029}
-  m_Center: {x: 0, y: -8.0312885e-17, z: 0.014917174}
---- !u!114 &8452345257663627690
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6042041557794026415}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2c54c8afad9d38284b6082f1f485ee44, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HealOnCollision
-  healPoints: 25
 --- !u!4 &6382291596809185557 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 043e7f36f110ab6198deda22b90677d5, type: 3}
