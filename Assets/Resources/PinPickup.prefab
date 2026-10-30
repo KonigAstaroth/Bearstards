@@ -29,8 +29,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1153673522567612543}
   - {fileID: 8852990710489488253}
@@ -69,6 +69,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8c8ee382ff4bc5caacc67ca14daac5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponPickup
+  pickupType: 0
   canBeDestroyed: 0
 --- !u!114 &6066381147740979338
 MonoBehaviour:
@@ -136,7 +137,7 @@ Light:
   serializedVersion: 13
   m_Type: 2
   m_Color: {r: 1, g: 0.5254902, b: 0, a: 1}
-  m_Intensity: 20
+  m_Intensity: 2
   m_Range: 2
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
