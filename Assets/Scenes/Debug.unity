@@ -236,6 +236,16 @@ MonoBehaviour:
   lookAroundChance: 0.6
   turnSpeed: 120
   speedRange: {x: 1.8, y: 3.5}
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  detectDistance: 2.5
+  detectRadius: 0.4
+  detectHeight: 1
+  blockedRepathTime: 1.5
+  animator: {fileID: 0}
+  deathTrigger: 
+  destroyDelay: 2
   stuckTime: 3
 --- !u!1001 &261909093
 PrefabInstance:
@@ -245,6 +255,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 5871956147471779949, guid: 2a83157db7a6f72f1b04aca5b6690a22, type: 3}
+      propertyPath: sceneViewId
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 6826196151463774761, guid: 2a83157db7a6f72f1b04aca5b6690a22, type: 3}
       propertyPath: m_Name
       value: MinorHeal
@@ -366,6 +380,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HealOnCollision
   healPoints: 25
+  pickupCollider: {fileID: 0}
+  healModel: {fileID: 0}
+  RespawnTime: 20
 --- !u!20 &535625985 stripped
 Camera:
   m_CorrespondingSourceObject: {fileID: 5479174071050467222, guid: 55d5db4e3a2b10c4c9bfc6d17ad1152e, type: 3}

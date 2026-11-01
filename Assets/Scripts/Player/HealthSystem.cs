@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using Photon.Pun;
 using UnityEngine.UI;
@@ -13,6 +12,13 @@ public class HealthSystem : MonoBehaviourPun
     [Header("Shield")]
     [SerializeField] private int shieldAmount = 50;
     [SerializeField] private GameObject helmetModel;
+
+    [Header("NPC")]
+    [Tooltip("Márcalo en los NPCs: al morir avisa con el evento Died en lugar de reaparecer como jugador.")]
+    [SerializeField] private bool isNpc = false;
+
+    /// <summary>Se dispara al morir cuando isNpc está activo.</summary>
+    public event System.Action Died;
 
     private int currentHealth;
     private int currentShield;
@@ -114,7 +120,7 @@ public class HealthSystem : MonoBehaviourPun
     private void Die(int attackerViewID, int pointsPerKill)
     {
         Debug.Log(
-            $"PLAYER DIED | Attacker ID: {attackerViewID} | " +
+            $"{(isNpc ? "NPC" : "PLAYER")} DIED | Attacker ID: {attackerViewID} | " +
             $"Points: {pointsPerKill}"
         );
 
@@ -129,6 +135,13 @@ public class HealthSystem : MonoBehaviourPun
                 attackerView.Owner,
                 pointsPerKill
             );
+        }
+
+        // Los NPCs no reaparecen como jugadores: avisan y se encargan ellos (WanderNPC).
+        if (isNpc)
+        {
+            Died?.Invoke();
+            return;
         }
 
         SpawnPlayers spawnManager =
