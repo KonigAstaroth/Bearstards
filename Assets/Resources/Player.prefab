@@ -2621,6 +2621,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MatchManager
   timerText: {fileID: 2715409913617751560}
+  waitingPanel: {fileID: 8916639916758537903}
+  waitingText: {fileID: 8104292255402582019}
 --- !u!114 &1189109933154989992
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3452,7 +3454,7 @@ GameObject:
   - component: {fileID: 2591986044828528326}
   - component: {fileID: 8104292255402582019}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: WaitingText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3475,7 +3477,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 700, y: 50}
+  m_SizeDelta: {x: 1000, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2591986044828528326
 CanvasRenderer:
@@ -3505,7 +3507,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Waiting for another player to join in
+  m_text: Waiting for another player to join in...
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e10d862b4ad2e38b49c48ec19af81632, type: 2}
   m_sharedMaterial: {fileID: -6323257668806081251, guid: e10d862b4ad2e38b49c48ec19af81632, type: 2}
@@ -3532,8 +3534,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 70
+  m_fontSizeBase: 70
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18

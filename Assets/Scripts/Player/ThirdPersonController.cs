@@ -171,6 +171,8 @@ public class ThirdPersonController : MonoBehaviour
 
     private void Move()
     {
+        if(!MatchManager.Instance.MatchStarted) return;
+
         Vector3 moveDirection = transform.forward * moveInput.z + transform.right * moveInput.x;
 
         float currentSpeed = isRunning ? sprintSpeed: moveSpeed;
@@ -203,6 +205,8 @@ public class ThirdPersonController : MonoBehaviour
 
     private void Look()
     {
+        if(!MatchManager.Instance.MatchStarted) return;
+        
         if (Mouse.current == null)
             return;
 

@@ -4,9 +4,11 @@ using Photon.Realtime;
 using ExitGames.Client.Photon;
 using TMPro;
 using UnityEngine;
+using System.Collections;
 
 public class MatchManager : MonoBehaviourPunCallbacks
 {
+    public static MatchManager Instance { get; private set; }
     [SerializeField] private TMP_Text timerText;
 
     private const double MatchDuration = 600.0;
@@ -17,14 +19,25 @@ public class MatchManager : MonoBehaviourPunCallbacks
 
     private bool resultsLoading;
 
+    public bool MatchStarted {get; private set;}
+    [SerializeField] private GameObject waitingPanel;
+    [SerializeField] private TMP_Text waitingText;
+    private bool timeIsUp;
+
     private void Awake()
     {
         PhotonNetwork.AutomaticallySyncScene = true;
+        Instance = this;
         Debug.Log("[MatchManager] Awake.");
     }
 
     private void Start()
     {
+        MatchStarted = false;
+        timeIsUp = false;
+
+        if (waitingPanel != null) waitingPanel.SetActive(true);
+
         if (!PhotonNetwork.InRoom)
             return;
 
@@ -41,6 +54,9 @@ public class MatchManager : MonoBehaviourPunCallbacks
             ShowTime(MatchDuration);
             return;
         }
+
+        MatchStarted = IsMatchStarted();
+        if(waitingPanel != null) waitingPanel.SetActive(!MatchStarted);
 
         var properties = PhotonNetwork.CurrentRoom.CustomProperties;
 
@@ -67,9 +83,32 @@ public class MatchManager : MonoBehaviourPunCallbacks
         ShowTime(remaining);
 
         // Únicamente el Master Client determina al ganador.
-        if (remaining <= 0 && PhotonNetwork.IsMasterClient)
+        if (remaining <= 0 && PhotonNetwork.IsMasterClient && !properties.ContainsKey("TimeIsUp"))
         {
-            FinishMatch();
+            timeIsUp = true;
+
+            PhotonNetwork.CurrentRoom.SetCustomProperties(
+                new ExitGames.Client.Photon.Hashtable
+                {
+                    { "TimeIsUp", true }
+                }
+            );
+
+            StartCoroutine(EndMatchSequence());
+        }
+
+        if (properties.TryGetValue("TimeIsUp", out object timeUpValue)
+            && timeUpValue is bool timeUp && timeUp)
+        {
+            MatchStarted = false;
+
+            if (waitingPanel != null)
+                waitingPanel.SetActive(true);
+
+            if (waitingText != null)
+                waitingText.text = "Time's Up!";
+
+            return;
         }
     }
 
@@ -96,7 +135,7 @@ public class MatchManager : MonoBehaviourPunCallbacks
     }
 
     public override void OnRoomPropertiesUpdate(
-        Hashtable propertiesThatChanged)
+        ExitGames.Client.Photon.Hashtable propertiesThatChanged)
     {
         if (propertiesThatChanged.ContainsKey(EndedKey)
             || propertiesThatChanged.ContainsKey(WinnerKey))
@@ -109,7 +148,7 @@ public class MatchManager : MonoBehaviourPunCallbacks
     {
         if (!PhotonNetwork.IsMasterClient ||
             !PhotonNetwork.InRoom ||
-            PhotonNetwork.CurrentRoom.PlayerCount < 2)
+            PhotonNetwork.CurrentRoom.PlayerCount < 1) //Cambiar a 2 ya en produccion
         {
             return;
         }
@@ -123,7 +162,7 @@ public class MatchManager : MonoBehaviourPunCallbacks
         }
 
         PhotonNetwork.CurrentRoom.SetCustomProperties(
-            new Hashtable
+            new ExitGames.Client.Photon.Hashtable
             {
                 { StartTimeKey, PhotonNetwork.Time }
             }
@@ -182,7 +221,7 @@ public class MatchManager : MonoBehaviourPunCallbacks
 
         // Ambos valores se publican juntos en la sala.
         PhotonNetwork.CurrentRoom.SetCustomProperties(
-            new Hashtable
+            new ExitGames.Client.Photon.Hashtable
             {
                 { WinnerKey, winnerActorNumber },
                 { EndedKey, true }
@@ -227,5 +266,22 @@ public class MatchManager : MonoBehaviourPunCallbacks
         int remainingSeconds = totalSeconds % 60;
 
         timerText.text = $"{minutes:00}:{remainingSeconds:00}";
+    }
+
+    private bool IsMatchStarted()
+    {
+        if (!PhotonNetwork.InRoom)
+        return false;
+
+        var properties = PhotonNetwork.CurrentRoom.CustomProperties;
+
+        return properties.ContainsKey(StartTimeKey)
+            && !properties.ContainsKey("TimeIsUp");
+    }
+
+    private IEnumerator EndMatchSequence()
+    {
+        yield return new WaitForSecondsRealtime(5f);
+        FinishMatch();
     }
 }
