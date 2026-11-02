@@ -9,11 +9,11 @@ public class RespawningUI : MonoBehaviour
     {
         if (seconds <= 0)
         {
-            countdownText.text = "VAMOS!";
+            countdownText.text = "GO!";
         }
         else
         {
-            countdownText.text = "Reapareciendo en: " + seconds.ToString();
+            countdownText.text = "Respawning in: " + seconds.ToString();
         }
     }
 }
