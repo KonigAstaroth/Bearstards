@@ -5,12 +5,19 @@ using UnityEngine;
 using ExitGames.Client.Photon;
 using UnityEngine.UI;
 using System.Collections;
+using UnityEditor.Animations;
 
 public class ResultsManager : MonoBehaviourPunCallbacks
 {
     [Header("UI")]
     [SerializeField] private TMP_Text resultText;
-    [SerializeField] private Button homeButton;
+    [Header("Bears")]
+    [SerializeField] private Animator localBearController;
+    [SerializeField] private Animator enemyBearController;
+
+    [Header("UI transition")]
+    [SerializeField] private CanvasGroup homePanel;
+    [SerializeField] private float fadeDuration = 1f;
 
     private const string WinnerKey = "WinnerActorNumber";
     private bool resultDisplayed;
@@ -19,10 +26,10 @@ public class ResultsManager : MonoBehaviourPunCallbacks
     {
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+        homePanel.alpha = 0;
 
         RefreshResult();
 
-        if(homeButton != null) homeButton.gameObject.SetActive(false);
     }
 
     public override void OnRoomPropertiesUpdate(
@@ -66,12 +73,16 @@ public class ResultsManager : MonoBehaviourPunCallbacks
         else if (winnerActorNumber == myActorNumber)
         {
             resultText.text = "VICTORY!";
-            resultText.color = Color.yellow;
+            resultText.color = HexToColor("#FFA400");
+            localBearController.SetTrigger("Victory");
+            enemyBearController.SetTrigger("Defeat");
         }
         else
         {
             resultText.text = "DEFEAT";
             resultText.color = Color.red;
+            localBearController.SetTrigger("Defeat");
+            enemyBearController.SetTrigger("Victory");
         }
 
         resultDisplayed = true;
@@ -81,6 +92,29 @@ public class ResultsManager : MonoBehaviourPunCallbacks
     private IEnumerator GoToLobby()
     {
         yield return new WaitForSecondsRealtime(5f);
-        homeButton.gameObject.SetActive(true);
+
+        if (homePanel == null) yield break;
+
+        homePanel.gameObject.SetActive(true);
+        homePanel.alpha = 0f;
+
+        float elapsed = 0f;
+
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+
+            homePanel.alpha = Mathf.Lerp(0f, 1f, elapsed / fadeDuration);
+
+            yield return null;
+        }
+
+        homePanel.alpha = 1f;
+    }
+
+    private Color HexToColor(string hex)
+    {
+        ColorUtility.TryParseHtmlString(hex, out Color color);
+        return color;
     }
 }
