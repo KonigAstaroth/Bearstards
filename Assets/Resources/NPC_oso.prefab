@@ -2481,7 +2481,7 @@ CapsuleCollider:
   m_Radius: 0.5
   m_Height: 2
   m_Direction: 1
-  m_Center: {x: 0, y: 1, z: 0}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!195 &5316658975995277135
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -2630,7 +2630,7 @@ MonoBehaviour:
   speedRange: {x: 1, y: 2}
   obstacleMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 64
   detectDistance: 2.5
   detectRadius: 0.4
   detectHeight: 1
@@ -2756,7 +2756,7 @@ Transform:
   m_GameObject: {fileID: 7259809097216898425}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -1.1, z: 0}
+  m_LocalPosition: {x: 0, y: -1.2, z: 0}
   m_LocalScale: {x: 0.35, y: 0.35, z: 0.35}
   m_ConstrainProportionsScale: 0
   m_Children:
