@@ -7,7 +7,13 @@ public class RoomManager : MonoBehaviourPunCallbacks
     private void Start()
     {
         Debug.Log("Connecting...");
-        PhotonNetwork.ConnectUsingSettings();
+        if (!PhotonNetwork.IsConnected)
+        {
+            PhotonNetwork.ConnectUsingSettings();
+        }else if (PhotonNetwork.InLobby)
+        {
+            SceneManager.LoadScene("Lobby");
+        }
     }
 
     public override void OnConnectedToMaster()
