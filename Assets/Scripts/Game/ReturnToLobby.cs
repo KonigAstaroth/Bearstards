@@ -1,13 +1,19 @@
 using Photon.Pun;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
-public class ReturnToLobby : MonoBehaviourPun
+public class ReturnToLobby : MonoBehaviourPunCallbacks
 {
     public void GoToLobby()
     {
-        if (PhotonNetwork.IsMasterClient)
+        if (PhotonNetwork.InRoom)
         {
-            PhotonNetwork.LoadLevel("Lobby");
+            PhotonNetwork.LeaveRoom();
         }
+    }
+
+    public override void OnLeftRoom()
+    {
+        SceneManager.LoadScene("Loading");
     }
 }
