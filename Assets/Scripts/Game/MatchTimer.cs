@@ -12,6 +12,8 @@ public class MatchManager : MonoBehaviourPunCallbacks
     [SerializeField] private TMP_Text timerText;
 
     private const double MatchDuration = 600.0;
+    private GunSpawner gunSpawner;
+    private bool gunSpawned;
 
     private const string StartTimeKey = "MatchStartTime";
     private const string EndedKey = "MatchEnded";
@@ -35,6 +37,8 @@ public class MatchManager : MonoBehaviourPunCallbacks
     {
         MatchStarted = false;
         timeIsUp = false;
+        gunSpawned = false;
+        gunSpawner = FindAnyObjectByType<GunSpawner>();
 
         if (waitingPanel != null) waitingPanel.SetActive(true);
 
@@ -82,7 +86,18 @@ public class MatchManager : MonoBehaviourPunCallbacks
 
         ShowTime(remaining);
 
-        // Únicamente el Master Client determina al ganador.
+        // Spawn gun
+        if (remaining <= 180 && !gunSpawned)
+        {
+            gunSpawned = true;
+
+            if (PhotonNetwork.IsMasterClient)
+            {
+                gunSpawner.SpawnGun();
+            }
+        }
+
+        // Determine the winner
         if (remaining <= 0 && PhotonNetwork.IsMasterClient && !properties.ContainsKey("TimeIsUp"))
         {
             timeIsUp = true;
