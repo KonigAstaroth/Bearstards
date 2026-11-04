@@ -22,8 +22,11 @@ public class MatchManager : MonoBehaviourPunCallbacks
     private bool resultsLoading;
 
     public bool MatchStarted {get; private set;}
+    [Header("UI")]
     [SerializeField] private GameObject waitingPanel;
     [SerializeField] private TMP_Text waitingText;
+    [SerializeField] private TMP_Text phaseTextUI;
+    [SerializeField] private GameObject phasePanel;
     private bool timeIsUp;
 
     private void Awake()
@@ -38,6 +41,7 @@ public class MatchManager : MonoBehaviourPunCallbacks
         MatchStarted = false;
         timeIsUp = false;
         gunSpawned = false;
+        phasePanel.SetActive(false);
         gunSpawner = FindAnyObjectByType<GunSpawner>();
 
         if (waitingPanel != null) waitingPanel.SetActive(true);
@@ -93,7 +97,27 @@ public class MatchManager : MonoBehaviourPunCallbacks
 
             if (PhotonNetwork.IsMasterClient)
             {
+                photonView.RPC(
+                    nameof(ShowPhaseText),
+                    RpcTarget.All,
+                    "New Merchandise \n Find the gun!",
+                    3f
+                );
                 gunSpawner.SpawnGun();
+            }
+        }
+
+        if (remaining <= 60 && remaining >=58)
+        {
+            if(PhotonNetwork.IsMasterClient)
+            { 
+                photonView.RPC(
+                    nameof(ShowPhaseText),
+                    RpcTarget.All,
+                    "Final clearance!",
+                    2f
+                );
+                timerText.color = Color.red;
             }
         }
 
@@ -168,6 +192,8 @@ public class MatchManager : MonoBehaviourPunCallbacks
             return;
         }
 
+        StartCoroutine(StartMatchSequence());
+
         var properties = PhotonNetwork.CurrentRoom.CustomProperties;
 
         if (properties.ContainsKey(StartTimeKey) ||
@@ -181,6 +207,19 @@ public class MatchManager : MonoBehaviourPunCallbacks
             {
                 { StartTimeKey, PhotonNetwork.Time }
             }
+        );
+    }
+
+    private IEnumerator StartMatchSequence()
+    {
+        waitingPanel.SetActive(false);
+        yield return new WaitForSecondsRealtime(0.5f);
+
+        photonView.RPC(
+            nameof(ShowPhaseText),
+            RpcTarget.All,
+            "Lights Out!",
+            3f
         );
     }
 
@@ -298,5 +337,29 @@ public class MatchManager : MonoBehaviourPunCallbacks
     {
         yield return new WaitForSecondsRealtime(5f);
         FinishMatch();
+    }
+
+    [PunRPC]
+    private void ShowPhaseText(string message, float duration)
+    {
+        if (phaseCoroutine != null)
+            StopCoroutine(phaseCoroutine);
+
+        phaseCoroutine = StartCoroutine(PhaseTextChange(message, duration));
+    }
+
+    private Coroutine phaseCoroutine;
+
+    private IEnumerator PhaseTextChange(string phaseText, float displayDuration)
+    {
+        if (phaseTextUI == null && phasePanel == null)
+            yield break;
+
+        phaseTextUI.text = phaseText;
+        phasePanel.SetActive(true);
+
+        // Mantener visible
+        yield return new WaitForSecondsRealtime(displayDuration);
+        phasePanel.SetActive(false);
     }
 }
