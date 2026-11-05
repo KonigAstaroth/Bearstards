@@ -5,12 +5,32 @@ ModelImporter:
   internalIDToNameTable: []
   externalObjects:
   - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: back
+    second: {fileID: 2100000, guid: 414853863ea5fde27b1e22558a070236, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: base_color
+    second: {fileID: 2100000, guid: 40b33e98eb8223fcd9783474c39e0a8f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: perforated_metal
+    second: {fileID: 2100000, guid: 0fcfbcba90a69b38e96cd809c2647160, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: tags
+    second: {fileID: 2100000, guid: 40ccc9f9bbb63a7cf9b69eb8942bd8a0, type: 2}
+  - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: perforated_metal
     second: {fileID: 2800000, guid: 80404219a28734046b0b1e760365ae53, type: 3}
   materials:
-    materialImportMode: 2
+    materialImportMode: 1
     materialName: 0
     materialSearch: 1
     materialLocation: 1

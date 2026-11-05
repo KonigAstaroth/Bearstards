@@ -3,9 +3,24 @@ guid: 98d98979c800c8e42bcaf1ba66b8bbcd
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.001
+    second: {fileID: 2100000, guid: b2d2fb2219b9ef7a6bec52093360f599, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: lightbars_material
+    second: {fileID: 2100000, guid: 6615be59aeff72d7c98f948f7512ec40, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: metal_grid_material
+    second: {fileID: 2100000, guid: 202b41a973368429382fe5ad8061e171, type: 2}
   materials:
-    materialImportMode: 2
+    materialImportMode: 1
     materialName: 0
     materialSearch: 1
     materialLocation: 1
