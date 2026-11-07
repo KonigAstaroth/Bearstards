@@ -5,7 +5,6 @@ using UnityEngine;
 using ExitGames.Client.Photon;
 using UnityEngine.UI;
 using System.Collections;
-using UnityEditor.Animations;
 
 public class ResultsManager : MonoBehaviourPunCallbacks
 {

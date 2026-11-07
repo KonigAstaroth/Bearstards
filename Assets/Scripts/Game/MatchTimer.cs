@@ -187,7 +187,7 @@ public class MatchManager : MonoBehaviourPunCallbacks
     {
         if (!PhotonNetwork.IsMasterClient ||
             !PhotonNetwork.InRoom ||
-            PhotonNetwork.CurrentRoom.PlayerCount < 1) //Cambiar a 2 ya en produccion
+            PhotonNetwork.CurrentRoom.PlayerCount < 2) //Cambiar a 2 ya en produccion
         {
             return;
         }
