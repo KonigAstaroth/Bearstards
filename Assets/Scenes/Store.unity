@@ -9259,6 +9259,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MatchManager
   requiredPlayers: 2
+  gunSpawner: {fileID: 118129139}
 --- !u!1001 &845745035
 PrefabInstance:
   m_ObjectHideFlags: 0
