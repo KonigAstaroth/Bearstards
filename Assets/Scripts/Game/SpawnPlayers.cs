@@ -22,10 +22,14 @@ public class SpawnPlayers : MonoBehaviour
 
     private bool isRespawning;
 
+    private void Awake()
+    {
+        deathCamera.gameObject.SetActive(false);
+    }
+
     private void Start()
     {
         StartCoroutine(WaitForRoom());
-        deathCamera.enabled = false;
     }
 
     private IEnumerator WaitForRoom()
@@ -53,7 +57,7 @@ public class SpawnPlayers : MonoBehaviour
     private IEnumerator RespawnCoroutine(GameObject deadPlayer)
     {
         if (deathCamera != null)
-            deathCamera.enabled = true;
+            deathCamera.gameObject.SetActive(true);
 
         PhotonNetwork.Destroy(deadPlayer);
 
@@ -74,7 +78,7 @@ public class SpawnPlayers : MonoBehaviour
         SpawnPlayer();
 
         if (deathCamera != null)
-            deathCamera.enabled = false;
+            deathCamera.gameObject.SetActive(false);
 
         isRespawning = false;
     }

@@ -11,6 +11,11 @@ public class PlayerMatchUI : MonoBehaviour
     [SerializeField] public TMP_Text phaseTextUI;
     [SerializeField] public GameObject phasePanel;
 
+    private void Awake()
+    {
+        if (phasePanel != null) phasePanel.SetActive(false);
+    }
+
     private void Start()
     {
         PhotonView playerView = GetComponentInParent<PhotonView>();

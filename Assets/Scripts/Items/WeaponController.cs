@@ -115,22 +115,34 @@ public class WeaponController : MonoBehaviourPun
             new Vector3(0.5f, 0.5f, 0f)
         );
 
-        Vector3 targetPoint;
+        Vector3 targetPoint = ray.GetPoint(aimDistance);
 
-        if (Physics.Raycast(ray, out RaycastHit hit, aimDistance))
+        // Buscar el impacto más cercano ignorando al propio jugador.
+        RaycastHit[] hits = Physics.RaycastAll(ray, aimDistance);
+
+        float closestDistance = float.MaxValue;
+
+        foreach (RaycastHit hit in hits)
         {
-            targetPoint = hit.point;
-        }
-        else
-        {
-            targetPoint = ray.GetPoint(aimDistance);
+            PhotonView hitView =
+                hit.collider.GetComponentInParent<PhotonView>();
+
+            // Ignorar los colliders del jugador que está disparando.
+            if (hitView == photonView)
+                continue;
+
+            if (hit.distance < closestDistance)
+            {
+                closestDistance = hit.distance;
+                targetPoint = hit.point;
+            }
         }
 
-        // Dirección desde la pistola hacia el objetivo.
+        // Dirección desde la pistola hasta el punto de mira.
         Vector3 shootDirection =
             (targetPoint - shootPoint.position).normalized;
 
-        // Crear el dardo en el cañón de la pistola.
+        // Instanciar proyectil mediante Photon.
         GameObject dart = PhotonNetwork.Instantiate(
             DartPrefab.name,
             shootPoint.position,
@@ -143,10 +155,34 @@ public class WeaponController : MonoBehaviourPun
             }
         );
 
+        // Evitar colisiones con el propio jugador.
+        Collider[] playerColliders =
+            photonView.GetComponentsInChildren<Collider>();
+
+        Collider[] dartColliders =
+            dart.GetComponentsInChildren<Collider>();
+
+        foreach (Collider playerCollider in playerColliders)
+        {
+            foreach (Collider dartCollider in dartColliders)
+            {
+                if (playerCollider != null && dartCollider != null)
+                {
+                    Physics.IgnoreCollision(
+                        playerCollider,
+                        dartCollider
+                    );
+                }
+            }
+        }
+
         Rigidbody rb = dart.GetComponent<Rigidbody>();
 
         if (rb != null)
         {
+            rb.collisionDetectionMode =
+                CollisionDetectionMode.ContinuousDynamic;
+
             rb.AddForce(
                 shootDirection * shootForce,
                 ForceMode.Impulse

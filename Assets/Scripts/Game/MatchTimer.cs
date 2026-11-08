@@ -2,16 +2,14 @@
 using Photon.Pun;
 using Photon.Realtime;
 using ExitGames.Client.Photon;
-using TMPro;
 using UnityEngine;
 using System.Collections;
-using Photon.Pun.Demo.PunBasics;
 
 public class MatchManager : MonoBehaviourPunCallbacks
 {
     public static MatchManager Instance { get; private set; }
 
-    private const double MatchDuration = 600.0;
+    private const double MatchDuration = 190.0;
 
     private const string StartTimeKey = "MatchStartTime";
     private const string EndedKey = "MatchEnded";
@@ -20,8 +18,7 @@ public class MatchManager : MonoBehaviourPunCallbacks
 
     [Header("Match Settings")]
     [SerializeField] private int requiredPlayers = 2;
-
-    private GunSpawner gunSpawner;
+    [SerializeField] private GunSpawner gunSpawner;
     private PlayerMatchUI playerUI;
 
     private bool gunSpawned;
@@ -58,8 +55,6 @@ public class MatchManager : MonoBehaviourPunCallbacks
         playerUI.phasePanel.SetActive(false);
 
         if (playerUI.waitingPanel != null) playerUI.waitingPanel.SetActive(true);
-
-        gunSpawner = FindAnyObjectByType<GunSpawner>();
 
         TryStartMatch();
         CheckMatchEnded();
