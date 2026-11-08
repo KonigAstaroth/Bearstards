@@ -2602,7 +2602,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponController
   NeedleModel: {fileID: 6018494916580295534}
   WeaponModel: {fileID: 9173044130010709912}
-  needleMelee: {fileID: 2170661900886579997}
+  needleMelee: {fileID: 0}
   DartPrefab: {fileID: 3960909024417016728, guid: 9b289deb31d17af17bbb7fdc1f9aad55, type: 3}
   shootPoint: {fileID: 7288812911595802113}
   shootForce: 20
@@ -3538,7 +3538,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7627987694427230808}
-  - component: {fileID: 4351171249961303452}
   m_Layer: 0
   m_Name: NeedleHitbox
   m_TagString: Untagged
@@ -3561,27 +3560,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 6399102225023703508}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &4351171249961303452
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4590764607581071634}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1.2288475, y: 4.583268, z: 1}
-  m_Center: {x: -0.038763963, y: 4.580874, z: 0.0000005970389}
 --- !u!1 &5149019477188315808
 GameObject:
   m_ObjectHideFlags: 0
@@ -4422,14 +4400,17 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9e22a7ebe8c15ff41b94e9270b01d1ed, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2170661900886579997}
+      addedObject: {fileID: 7056175015621278830}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9e22a7ebe8c15ff41b94e9270b01d1ed, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2409906674928633390}
   m_SourcePrefab: {fileID: 100100000, guid: 9e22a7ebe8c15ff41b94e9270b01d1ed, type: 3}
 --- !u!1 &6018494916580295534 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 9e22a7ebe8c15ff41b94e9270b01d1ed, type: 3}
   m_PrefabInstance: {fileID: 6864775476126055999}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &2170661900886579997
+--- !u!114 &7056175015621278830
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4442,14 +4423,35 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NeedleMelee
   playerView: {fileID: 695105535260783113}
-  hitbox: {fileID: 4351171249961303452}
+  hitbox: {fileID: 2409906674928633390}
   damage: 25
   pointsPerKill: 200
-  attackDuration: 0.2
+  attackDuration: 1
   attackCooldown: 0.6
   animator: {fileID: 473363567224169108}
   attackStateName: slash
   crossFadeDuration: 0.05
+--- !u!65 &2409906674928633390
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6018494916580295534}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.7751968, y: 6.090767, z: 1.4740806}
+  m_Center: {x: 0.029162318, y: 4.648706, z: -0.065174975}
 --- !u!4 &6399102225023703508 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 9e22a7ebe8c15ff41b94e9270b01d1ed, type: 3}
