@@ -5,69 +5,76 @@ using ExitGames.Client.Photon;
 using TMPro;
 using UnityEngine;
 using System.Collections;
+using Photon.Pun.Demo.PunBasics;
 
 public class MatchManager : MonoBehaviourPunCallbacks
 {
     public static MatchManager Instance { get; private set; }
-    [SerializeField] private TMP_Text timerText;
 
     private const double MatchDuration = 600.0;
-    private GunSpawner gunSpawner;
-    private bool gunSpawned;
 
     private const string StartTimeKey = "MatchStartTime";
     private const string EndedKey = "MatchEnded";
     private const string WinnerKey = "WinnerActorNumber";
+    private const string TimeUpKey = "TimeIsUp";
 
+    [Header("Match Settings")]
+    [SerializeField] private int requiredPlayers = 2;
+
+    private GunSpawner gunSpawner;
+    private PlayerMatchUI playerUI;
+
+    private bool gunSpawned;
     private bool resultsLoading;
+    private bool startSequenceStarted;
+    private bool endSequenceStarted;
+    private bool finalClearanceShown;
 
-    public bool MatchStarted {get; private set;}
-    [Header("UI")]
-    [SerializeField] private GameObject waitingPanel;
-    [SerializeField] private TMP_Text waitingText;
-    [SerializeField] private TMP_Text phaseTextUI;
-    [SerializeField] private GameObject phasePanel;
-    private bool timeIsUp;
+    private Coroutine phaseCoroutine;
+
+    public bool MatchStarted { get; private set; }
 
     private void Awake()
     {
-        PhotonNetwork.AutomaticallySyncScene = true;
+        if (Instance != null && Instance != this)
+        {
+            Debug.LogWarning("[MatchManager] Duplicate instance destroyed.");
+            Destroy(gameObject);
+            return;
+        }
+
         Instance = this;
-        Debug.Log("[MatchManager] Awake.");
+
+        PhotonNetwork.AutomaticallySyncScene = true;
+
+        Debug.Log("[MatchManager] Initialized.");
     }
 
     private void Start()
     {
         MatchStarted = false;
-        timeIsUp = false;
+
         gunSpawned = false;
-        phasePanel.SetActive(false);
+        playerUI.phasePanel.SetActive(false);
+
+        if (playerUI.waitingPanel != null) playerUI.waitingPanel.SetActive(true);
+
         gunSpawner = FindAnyObjectByType<GunSpawner>();
 
-        if (waitingPanel != null) waitingPanel.SetActive(true);
-
-        if (!PhotonNetwork.InRoom)
-            return;
-
         TryStartMatch();
-
-        // Por si la partida ya terminó antes de iniciar este componente.
         CheckMatchEnded();
     }
 
     private void Update()
     {
         if (!PhotonNetwork.InRoom)
-        {
-            ShowTime(MatchDuration);
             return;
-        }
 
         MatchStarted = IsMatchStarted();
-        if(waitingPanel != null) waitingPanel.SetActive(!MatchStarted);
 
         var properties = PhotonNetwork.CurrentRoom.CustomProperties;
 
+        // Check if match has ended.
         if (properties.TryGetValue(EndedKey, out object endedValue)
             && endedValue is bool ended && ended)
         {
@@ -76,21 +83,28 @@ public class MatchManager : MonoBehaviourPunCallbacks
             return;
         }
 
+        // Check if match has started.
         if (!properties.TryGetValue(StartTimeKey, out object startValue))
         {
             ShowTime(MatchDuration);
+            UpdateWaitingUI(false);
             return;
         }
 
         double startTime = (double)startValue;
+
         double elapsed = PhotonNetwork.Time - startTime;
+
         double remaining = System.Math.Max(
-            0, MatchDuration - elapsed
+            0,
+            MatchDuration - elapsed
         );
 
         ShowTime(remaining);
 
-        // Spawn gun
+        UpdateWaitingUI(MatchStarted);
+
+        // Spawn weapon once.
         if (remaining <= 180 && !gunSpawned)
         {
             gunSpawned = true;
@@ -100,55 +114,99 @@ public class MatchManager : MonoBehaviourPunCallbacks
                 photonView.RPC(
                     nameof(ShowPhaseText),
                     RpcTarget.All,
-                    "New Merchandise \n Find the gun!",
+                    "New Merchandise!\nFind the gun!",
                     3f
                 );
-                gunSpawner.SpawnGun();
+
+                if (gunSpawner != null)
+                {
+                    gunSpawner.SpawnGun();
+                }
+                else
+                {
+                    Debug.LogError("[MatchManager] GunSpawner not found!");
+                }
             }
         }
 
-        if (remaining <= 60 && remaining >=58)
+        // Final clearance announcement.
+        if (remaining <= 60 && remaining > 58
+            && PhotonNetwork.IsMasterClient
+            && !finalClearanceShown)
         {
-            if(PhotonNetwork.IsMasterClient)
-            { 
-                photonView.RPC(
-                    nameof(ShowPhaseText),
-                    RpcTarget.All,
-                    "Final clearance!",
-                    2f
-                );
-                timerText.color = Color.red;
-            }
+            finalClearanceShown = true;
+
+            photonView.RPC(
+                nameof(ShowPhaseText),
+                RpcTarget.All,
+                "Final clearance!",
+                2f
+            );
+
+            if (playerUI != null && playerUI.timerText != null)
+                playerUI.timerText.color = Color.red;
         }
 
-        // Determine the winner
-        if (remaining <= 0 && PhotonNetwork.IsMasterClient && !properties.ContainsKey("TimeIsUp"))
+        // Time is up.
+        if (remaining <= 0
+            && PhotonNetwork.IsMasterClient
+            && !properties.ContainsKey(TimeUpKey)
+            && !endSequenceStarted)
         {
-            timeIsUp = true;
+            endSequenceStarted = true;
 
             PhotonNetwork.CurrentRoom.SetCustomProperties(
                 new ExitGames.Client.Photon.Hashtable
                 {
-                    { "TimeIsUp", true }
+                    { TimeUpKey, true }
                 }
             );
 
             StartCoroutine(EndMatchSequence());
         }
 
-        if (properties.TryGetValue("TimeIsUp", out object timeUpValue)
+        // Waiting screen during the final delay.
+        if (properties.TryGetValue(TimeUpKey, out object timeUpValue)
             && timeUpValue is bool timeUp && timeUp)
         {
             MatchStarted = false;
 
-            if (waitingPanel != null)
-                waitingPanel.SetActive(true);
+            UpdateWaitingUI(false);
 
-            if (waitingText != null)
-                waitingText.text = "Time's Up!";
+            if (playerUI != null && playerUI.waitingText != null)
+                playerUI.waitingText.text = "Time's Up!";
 
             return;
         }
+    }
+
+    // Register the local player's Canvas.
+    public void RegisterPlayerUI(PlayerMatchUI ui)
+    {
+        if (ui == null)
+            return;
+
+        playerUI = ui;
+
+        Debug.Log("[MatchManager] Local player UI registered.");
+
+        // Initialize UI immediately.
+        if (playerUI.waitingPanel != null)
+            playerUI.waitingPanel.SetActive(!IsMatchStarted());
+
+        MatchStarted = IsMatchStarted();
+
+        ShowTime(GetRemainingTime());
+
+        CheckMatchEnded();
+    }
+
+    private void UpdateWaitingUI(bool matchStarted)
+    {
+        if (playerUI == null || playerUI.waitingPanel == null)
+            return;
+
+        playerUI.waitingPanel.SetActive(!matchStarted);
     }
 
     public override void OnJoinedRoom()
@@ -164,7 +222,7 @@ public class MatchManager : MonoBehaviourPunCallbacks
 
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
-        // El contador no se reinicia.
+        // Match timer does not reset.
     }
 
     public override void OnMasterClientSwitched(Player newMasterClient)
@@ -173,11 +231,14 @@ public class MatchManager : MonoBehaviourPunCallbacks
         CheckMatchEnded();
     }
 
-    public override void OnRoomPropertiesUpdate(
-        ExitGames.Client.Photon.Hashtable propertiesThatChanged)
+    public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable propertiesThatChanged)
     {
-        if (propertiesThatChanged.ContainsKey(EndedKey)
-            || propertiesThatChanged.ContainsKey(WinnerKey))
+        if (propertiesThatChanged.ContainsKey(StartTimeKey))
+        {
+            MatchStarted = IsMatchStarted();
+        }
+
+        if (propertiesThatChanged.ContainsKey(EndedKey))
         {
             CheckMatchEnded();
         }
@@ -185,34 +246,36 @@ public class MatchManager : MonoBehaviourPunCallbacks
 
     private void TryStartMatch()
     {
-        if (!PhotonNetwork.IsMasterClient ||
-            !PhotonNetwork.InRoom ||
-            PhotonNetwork.CurrentRoom.PlayerCount < 2) //Cambiar a 2 ya en produccion
-        {
+        if (!PhotonNetwork.InRoom || !PhotonNetwork.IsMasterClient)
             return;
-        }
 
-        StartCoroutine(StartMatchSequence());
+        if (PhotonNetwork.CurrentRoom.PlayerCount < requiredPlayers)
+            return;
 
         var properties = PhotonNetwork.CurrentRoom.CustomProperties;
 
-        if (properties.ContainsKey(StartTimeKey) ||
-            properties.ContainsKey(EndedKey))
+        if (properties.ContainsKey(StartTimeKey)
+            || properties.ContainsKey(EndedKey))
+            return;
+
+        if (!PhotonNetwork.CurrentRoom.SetCustomProperties(
+            new ExitGames.Client.Photon.Hashtable
+            {
+                { StartTimeKey, PhotonNetwork.Time }
+            }))
         {
             return;
         }
 
-        PhotonNetwork.CurrentRoom.SetCustomProperties(
-            new ExitGames.Client.Photon.Hashtable
-            {
-                { StartTimeKey, PhotonNetwork.Time }
-            }
-        );
+        if (!startSequenceStarted)
+        {
+            startSequenceStarted = true;
+            StartCoroutine(StartMatchSequence());
+        }
     }
 
     private IEnumerator StartMatchSequence()
     {
-        waitingPanel.SetActive(false);
         yield return new WaitForSecondsRealtime(0.5f);
 
         photonView.RPC(
@@ -225,15 +288,11 @@ public class MatchManager : MonoBehaviourPunCallbacks
 
     private void FinishMatch()
     {
-        if (!PhotonNetwork.IsMasterClient ||
-            !PhotonNetwork.InRoom)
-        {
+        if (!PhotonNetwork.InRoom || !PhotonNetwork.IsMasterClient)
             return;
-        }
 
         var properties = PhotonNetwork.CurrentRoom.CustomProperties;
 
-        // Evita declarar el resultado más de una vez.
         if (properties.ContainsKey(EndedKey))
             return;
 
@@ -244,6 +303,7 @@ public class MatchManager : MonoBehaviourPunCallbacks
         foreach (Player player in PhotonNetwork.PlayerList)
         {
             string scoreKey = $"Score_{player.ActorNumber}";
+
             int score = 0;
 
             if (properties.TryGetValue(scoreKey, out object value))
@@ -263,17 +323,13 @@ public class MatchManager : MonoBehaviourPunCallbacks
             }
         }
 
-        // -1 representa un empate.
         if (tie || winnerActorNumber == -1)
         {
             winnerActorNumber = -1;
         }
 
-        Debug.Log(
-            $"Partida terminada. Ganador: {winnerActorNumber}"
-        );
+        Debug.Log($"[MatchManager] Match ended. Winner: {winnerActorNumber}");
 
-        // Ambos valores se publican juntos en la sala.
         PhotonNetwork.CurrentRoom.SetCustomProperties(
             new ExitGames.Client.Photon.Hashtable
             {
@@ -299,43 +355,67 @@ public class MatchManager : MonoBehaviourPunCallbacks
 
     private void LoadResultsOnce()
     {
+        if (!PhotonNetwork.InRoom || !PhotonNetwork.IsMasterClient)
+            return;
+
         if (resultsLoading)
             return;
 
         resultsLoading = true;
 
-        if (PhotonNetwork.IsMasterClient)
-        {
-            PhotonNetwork.LoadLevel("Results");
-        }
+        Debug.Log("[MatchManager] Loading Results.");
+
+        PhotonNetwork.LoadLevel("Results");
     }
 
     private void ShowTime(double seconds)
     {
-        if (timerText == null)
+        if (playerUI == null || playerUI.timerText == null)
             return;
 
         int totalSeconds = Mathf.CeilToInt((float)seconds);
+
         int minutes = totalSeconds / 60;
         int remainingSeconds = totalSeconds % 60;
 
-        timerText.text = $"{minutes:00}:{remainingSeconds:00}";
+        playerUI.timerText.text =
+            $"{minutes:00}:{remainingSeconds:00}";
+
+        if (seconds <= 60)
+            playerUI.timerText.color = Color.red;
+    }
+
+    private double GetRemainingTime()
+    {
+        if (!PhotonNetwork.InRoom)
+            return MatchDuration;
+
+        var properties = PhotonNetwork.CurrentRoom.CustomProperties;
+
+        if (!properties.TryGetValue(StartTimeKey, out object startValue))
+            return MatchDuration;
+
+        double elapsed = PhotonNetwork.Time - (double)startValue;
+
+        return System.Math.Max(0, MatchDuration - elapsed);
     }
 
     private bool IsMatchStarted()
     {
         if (!PhotonNetwork.InRoom)
-        return false;
+            return false;
 
         var properties = PhotonNetwork.CurrentRoom.CustomProperties;
 
         return properties.ContainsKey(StartTimeKey)
-            && !properties.ContainsKey("TimeIsUp");
+            && !properties.ContainsKey(TimeUpKey)
+            && !properties.ContainsKey(EndedKey);
     }
 
     private IEnumerator EndMatchSequence()
     {
         yield return new WaitForSecondsRealtime(5f);
+
         FinishMatch();
     }
 
@@ -345,21 +425,34 @@ public class MatchManager : MonoBehaviourPunCallbacks
         if (phaseCoroutine != null)
             StopCoroutine(phaseCoroutine);
 
-        phaseCoroutine = StartCoroutine(PhaseTextChange(message, duration));
+        phaseCoroutine = StartCoroutine(
+            PhaseTextChange(message, duration)
+        );
     }
 
-    private Coroutine phaseCoroutine;
-
-    private IEnumerator PhaseTextChange(string phaseText, float displayDuration)
+    private IEnumerator PhaseTextChange(
+        string message,
+        float displayDuration)
     {
-        if (phaseTextUI == null && phasePanel == null)
+        if (playerUI == null ||
+            playerUI.phaseTextUI == null ||
+            playerUI.phasePanel == null)
+        {
             yield break;
+        }
 
-        phaseTextUI.text = phaseText;
-        phasePanel.SetActive(true);
+        playerUI.phaseTextUI.text = message;
 
-        // Mantener visible
+        playerUI.phasePanel.SetActive(true);
+
         yield return new WaitForSecondsRealtime(displayDuration);
-        phasePanel.SetActive(false);
+
+        playerUI.phasePanel.SetActive(false);
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
     }
 }

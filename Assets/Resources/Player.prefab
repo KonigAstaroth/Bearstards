@@ -2352,11 +2352,11 @@ GameObject:
   - component: {fileID: 695105535260783113}
   - component: {fileID: -7081383546395802221}
   - component: {fileID: 2614045424524158718}
-  - component: {fileID: 9159503761632515982}
   - component: {fileID: 1189109933154989992}
   - component: {fileID: 473363567224169108}
   - component: {fileID: 3237562304696622571}
   - component: {fileID: -7385552671645107849}
+  - component: {fileID: 6209237499032486139}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -2610,23 +2610,6 @@ MonoBehaviour:
   aimDistance: 100
   pointsPerKill: 400
   maxAmmunition: 6
---- !u!114 &9159503761632515982
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 760855664641151730}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2aa590b8f38d3039e869ed36c173285a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MatchManager
-  timerText: {fileID: 2715409913617751560}
-  waitingPanel: {fileID: 8916639916758537903}
-  waitingText: {fileID: 8104292255402582019}
-  phaseTextUI: {fileID: 3180964117338582705}
-  phasePanel: {fileID: 5783462010817085089}
 --- !u!114 &1189109933154989992
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2732,6 +2715,23 @@ MonoBehaviour:
   recoveryTimeout: 3
   upperBodyLayerName: UpperBody
   weaponController: {fileID: 2614045424524158718}
+--- !u!114 &6209237499032486139
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 760855664641151730}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3c202cd65fbc2bb9acfb8b7b92255e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerMatchUI
+  timerText: {fileID: 2715409913617751560}
+  waitingPanel: {fileID: 8916639916758537903}
+  waitingText: {fileID: 8104292255402582019}
+  phaseTextUI: {fileID: 3180964117338582705}
+  phasePanel: {fileID: 5783462010817085089}
 --- !u!1 &1115489475328008900
 GameObject:
   m_ObjectHideFlags: 0
