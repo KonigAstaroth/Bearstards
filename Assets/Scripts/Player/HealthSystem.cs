@@ -16,6 +16,8 @@ public class HealthSystem : MonoBehaviourPun
     [Header("NPC")]
     [Tooltip("Márcalo en los NPCs: al morir avisa con el evento Died en lugar de reaparecer como jugador.")]
     [SerializeField] private bool isNpc = false;
+    [Tooltip("Puntos que pierde el jugador que mata a este NPC.")]
+    [SerializeField] private int npcKillPenalty = 100;
 
     /// <summary>Se dispara al morir cuando isNpc está activo.</summary>
     public event System.Action Died;
@@ -124,6 +126,16 @@ public class HealthSystem : MonoBehaviourPun
             $"Points: {pointsPerKill}"
         );
 
+        // Los NPCs no dan puntos: le restan al jugador que los mata.
+        // Se maneja aparte porque el NPC pertenece al MasterClient, y la comprobación
+        // de abajo (atacante distinto del dueño) dejaría sin castigo al jugador master.
+        if (isNpc)
+        {
+            ApplyNpcKillPenalty(attackerViewID);
+            Died?.Invoke();
+            return;
+        }
+
         PhotonView attackerView = PhotonView.Find(attackerViewID);
 
         if (attackerView != null &&
@@ -137,13 +149,6 @@ public class HealthSystem : MonoBehaviourPun
             );
         }
 
-        // Los NPCs no reaparecen como jugadores: avisan y se encargan ellos (WanderNPC).
-        if (isNpc)
-        {
-            Died?.Invoke();
-            return;
-        }
-
         SpawnPlayers spawnManager =
             FindAnyObjectByType<SpawnPlayers>();
 
@@ -151,5 +156,23 @@ public class HealthSystem : MonoBehaviourPun
         {
             spawnManager.RespawnPlayer(gameObject);
         }
+    }
+
+    private void ApplyNpcKillPenalty(int attackerViewID)
+    {
+        if (npcKillPenalty <= 0)
+            return;
+
+        PhotonView attackerView = PhotonView.Find(attackerViewID);
+
+        if (attackerView == null || attackerView.Owner == null)
+            return;
+
+        // AwardKillPoints suma el valor recibido, así que un número negativo resta
+        attackerView.RPC(
+            nameof(ScoreManager.AwardKillPoints),
+            attackerView.Owner,
+            -npcKillPenalty
+        );
     }
 }
