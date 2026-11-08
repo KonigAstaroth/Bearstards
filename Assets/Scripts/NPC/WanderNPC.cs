@@ -1,17 +1,20 @@
 using System.Collections;
+using System.Collections.Generic;
 using Photon.Pun;
 using UnityEngine;
 using UnityEngine.AI;
 
 /// <summary>
-/// NPC que deambula libremente por el NavMesh, con animaciones, detección de obstáculos
-/// y sistema de vida (HealthSystem).
-/// - Solo el MasterClient simula la IA; los demás clientes reciben posición y animación por Photon.
-/// - Si no hay sala de Photon (pruebas offline), simula localmente.
-/// Requiere un NavMesh horneado en la escena.
+/// NPC que deambula libremente por el NavMesh, con animaciones, detección de obstáculos,
+/// sistema de vida (HealthSystem) y sincronización propia por Photon.
+/// - El dueño del PhotonView (el MasterClient, que lo crea) simula la IA y envía posición,
+///   rotación y estado de animación.
+/// - Los demás clientes apagan el NavMeshAgent y reproducen lo que reciben.
+/// - Sin sala de Photon (pruebas sueltas), simula localmente.
+/// IMPORTANTE: este script debe estar en la lista "Observed Components" del PhotonView.
 /// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
-public class WanderNPC : MonoBehaviour
+public class WanderNPC : MonoBehaviourPun, IPunObservable
 {
     [Header("Recorrido")]
     [Tooltip("Distancia mínima del siguiente destino (evita dar vueltas en el mismo lugar).")]
@@ -29,7 +32,7 @@ public class WanderNPC : MonoBehaviour
     [SerializeField] private float turnSpeed = 120f;
 
     [Header("Movimiento")]
-    [SerializeField] private Vector2 speedRange = new Vector2(1.8f, 3.5f);
+    [SerializeField] private Vector2 speedRange = new Vector2(1f, 2f);
 
     [Header("Detección de obstáculos")]
     [Tooltip("Capas que debe esquivar (jugadores, otros NPCs, objetos). Paredes y estantes ya los evita el NavMesh.")]
@@ -52,6 +55,16 @@ public class WanderNPC : MonoBehaviour
     [Header("Anti-atasco")]
     [SerializeField] private float stuckTime = 3f;
 
+    [Header("Sincronización (clientes remotos)")]
+    [Tooltip("Qué tan rápido sigue la posición recibida. Más alto = más pegado, más bajo = más suave.")]
+    [SerializeField] private float remoteSmoothing = 10f;
+    [Tooltip("Si la diferencia con la posición recibida supera esto, se teletransporta.")]
+    [SerializeField] private float teleportDistance = 5f;
+
+    [Header("Diagnóstico")]
+    [Tooltip("Imprime en la Console el estado de la sincronización. Desactívalo cuando todo funcione.")]
+    [SerializeField] private bool debugSync = false;
+
     private static readonly int IsMovingHash = Animator.StringToHash("IsMoving");
     private static readonly int IsWaitingHash = Animator.StringToHash("IsWaiting");
 
@@ -59,6 +72,8 @@ public class WanderNPC : MonoBehaviour
     private NavMeshPath path;
     private HealthSystem health;
 
+    // IA (solo el dueño)
+    private bool isSimulating;
     private bool waiting;
     private bool lookingAround;
     private bool isDead;
@@ -69,8 +84,23 @@ public class WanderNPC : MonoBehaviour
     private float baseSpeed;
     private Quaternion lookTarget;
 
-    // Solo el MasterClient (o nadie, si no hay sala) simula la IA
-    private bool ShouldSimulate => !PhotonNetwork.InRoom || PhotonNetwork.IsMasterClient;
+    // Estado que se sincroniza
+    private bool animMoving;
+    private bool animWaiting;
+    private bool deathVisualsApplied;
+    private Vector3 networkPosition;
+    private Quaternion networkRotation;
+    private int receivedCount;
+
+    // Simula quien es dueño del NPC (el MasterClient); sin sala, simula localmente
+    private bool ShouldSimulate
+    {
+        get
+        {
+            if (!PhotonNetwork.InRoom) return true;
+            return photonView != null && photonView.IsMine;
+        }
+    }
 
     private void Awake()
     {
@@ -80,6 +110,20 @@ public class WanderNPC : MonoBehaviour
 
         if (animator == null)
             animator = GetComponentInChildren<Animator>();
+
+        // Los objetos creados con PhotonNetwork.Instantiate no vuelven a buscar sus observados
+        // en tiempo de ejecución, así que nos aseguramos de estar en la lista del PhotonView
+        // y de que la sincronización envíe siempre (Unreliable), incluso a quien llega tarde.
+        if (photonView != null)
+        {
+            if (photonView.ObservedComponents == null)
+                photonView.ObservedComponents = new List<Component>();
+
+            if (!photonView.ObservedComponents.Contains(this))
+                photonView.ObservedComponents.Add(this);
+
+            photonView.Synchronization = ViewSynchronization.Unreliable;
+        }
     }
 
     private void OnEnable()
@@ -96,11 +140,24 @@ public class WanderNPC : MonoBehaviour
 
     private void Start()
     {
-        // En los demás clientes, el movimiento llega por PhotonTransformView
-        if (!ShouldSimulate)
+        isSimulating = ShouldSimulate;
+
+        if (debugSync)
+        {
+            bool hasView = photonView != null;
+            int observed = hasView && photonView.ObservedComponents != null ? photonView.ObservedComponents.Count : 0;
+            Debug.Log($"[NPC {name}] ViewID={(hasView ? photonView.ViewID : 0)} " +
+                      $"IsMine={(hasView && photonView.IsMine)} Simulando={isSimulating} " +
+                      $"Observados={observed} Sync={(hasView ? photonView.Synchronization.ToString() : "-")}");
+        }
+
+        networkPosition = transform.position;
+        networkRotation = transform.rotation;
+
+        // Cliente remoto: sin IA, solo reproduce lo que recibe
+        if (!isSimulating)
         {
             agent.enabled = false;
-            enabled = false;
             return;
         }
 
@@ -122,6 +179,12 @@ public class WanderNPC : MonoBehaviour
 
     private void Update()
     {
+        if (!isSimulating)
+        {
+            UpdateRemote();
+            return;
+        }
+
         if (isDead || !agent.isOnNavMesh) return;
 
         if (waiting)
@@ -155,6 +218,49 @@ public class WanderNPC : MonoBehaviour
         {
             stuckTimer = 0f;
         }
+    }
+
+    // ---------- Sincronización ----------
+
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            stream.SendNext(transform.position);
+            stream.SendNext(transform.rotation);
+            stream.SendNext(animMoving);
+            stream.SendNext(animWaiting);
+            stream.SendNext(isDead);
+        }
+        else
+        {
+            networkPosition = (Vector3)stream.ReceiveNext();
+            networkRotation = (Quaternion)stream.ReceiveNext();
+            bool moving = (bool)stream.ReceiveNext();
+            bool waitingAnim = (bool)stream.ReceiveNext();
+            bool dead = (bool)stream.ReceiveNext();
+
+            if (debugSync && receivedCount < 5)
+            {
+                receivedCount++;
+                Debug.Log($"[NPC {name}] recibido pos={networkPosition} moving={moving} waiting={waitingAnim} dead={dead}");
+            }
+
+            SetAnimation(moving, waitingAnim);
+
+            if (dead)
+                ApplyDeathVisuals();
+        }
+    }
+
+    private void UpdateRemote()
+    {
+        if (Vector3.Distance(transform.position, networkPosition) > teleportDistance)
+            transform.position = networkPosition;
+        else
+            transform.position = Vector3.Lerp(transform.position, networkPosition, remoteSmoothing * Time.deltaTime);
+
+        transform.rotation = Quaternion.Slerp(transform.rotation, networkRotation, remoteSmoothing * Time.deltaTime);
     }
 
     // ---------- Obstáculos ----------
@@ -255,6 +361,7 @@ public class WanderNPC : MonoBehaviour
 
     // ---------- Vida ----------
 
+    // Solo se dispara en el dueño (MasterClient), que es quien procesa el daño
     private void HandleDeath()
     {
         if (isDead) return;
@@ -268,6 +375,16 @@ public class WanderNPC : MonoBehaviour
         }
 
         SetAnimation(false, false);
+        ApplyDeathVisuals();
+
+        StartCoroutine(DestroyAfterDelay());
+    }
+
+    // Se ejecuta en el dueño al morir y en los demás clientes al recibir el aviso
+    private void ApplyDeathVisuals()
+    {
+        if (deathVisualsApplied) return;
+        deathVisualsApplied = true;
 
         if (animator != null && !string.IsNullOrEmpty(deathTrigger))
             animator.SetTrigger(deathTrigger);
@@ -275,15 +392,13 @@ public class WanderNPC : MonoBehaviour
         // Sin colisiones para que los proyectiles y jugadores lo atraviesen
         foreach (Collider c in GetComponentsInChildren<Collider>())
             c.enabled = false;
-
-        StartCoroutine(DestroyAfterDelay());
     }
 
     private IEnumerator DestroyAfterDelay()
     {
         yield return new WaitForSeconds(destroyDelay);
 
-        if (PhotonNetwork.InRoom && GetComponent<PhotonView>() != null)
+        if (PhotonNetwork.InRoom && photonView != null)
             PhotonNetwork.Destroy(gameObject);
         else
             Destroy(gameObject);
@@ -293,6 +408,9 @@ public class WanderNPC : MonoBehaviour
 
     private void SetAnimation(bool isMoving, bool isWaiting)
     {
+        animMoving = isMoving;
+        animWaiting = isWaiting;
+
         if (animator == null) return;
 
         animator.SetBool(IsMovingHash, isMoving);
