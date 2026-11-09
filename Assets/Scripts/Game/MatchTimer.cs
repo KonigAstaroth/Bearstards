@@ -245,6 +245,10 @@ public class MatchManager : MonoBehaviourPunCallbacks
 
     public override void OnMasterClientSwitched(Player newMasterClient)
     {
+        // Si la partida ya empezó, el master nuevo se asegura de que la sala siga cerrada.
+        if (PhotonNetwork.IsMasterClient && EstadoPartida.Iniciada)
+            CerrarSala();
+
         // Según el orden de los callbacks, el abandono puede verse aquí primero.
         RevisarAbandono();
         ContinuarFinPorTiempo();
@@ -323,6 +327,8 @@ public class MatchManager : MonoBehaviourPunCallbacks
             Debug.LogWarning("[MatchManager] No se pudo iniciar la partida.");
             return;
         }
+
+        CerrarSala();
 
         Debug.Log($"[MatchManager] Partida iniciada. MatchId: {matchId} | Actores: {DescribirActores(actores, props)}");
 
@@ -448,6 +454,7 @@ public class MatchManager : MonoBehaviourPunCallbacks
         }
 
         finSolicitado = true;
+        CerrarSala();
 
         PhotonNetwork.CurrentRoom.SetCustomProperties(
             new ExitGames.Client.Photon.Hashtable
@@ -459,6 +466,22 @@ public class MatchManager : MonoBehaviourPunCallbacks
         );
 
         Debug.Log($"[MatchManager] Abandono del actor {actorQueSeFue}. Ganador: {ganador} | MatchId: {EstadoPartida.MatchId}");
+    }
+
+    // Nadie más puede entrar ni ver la sala una vez empezada la partida. Solo el master.
+    private static void CerrarSala()
+    {
+        if (!PhotonNetwork.InRoom || !PhotonNetwork.IsMasterClient)
+            return;
+
+        Room sala = PhotonNetwork.CurrentRoom;
+        if (!sala.IsOpen && !sala.IsVisible)
+            return;
+
+        sala.IsOpen = false;
+        sala.IsVisible = false;
+
+        Debug.Log("[MatchManager] Sala cerrada.");
     }
 
     private static bool SigueEnSala(int actor)
@@ -533,6 +556,7 @@ public class MatchManager : MonoBehaviourPunCallbacks
         }
 
         finSolicitado = true;
+        CerrarSala();
 
         Debug.Log($"[MatchManager] Partida terminada por tiempo. Ganador: {winnerActorNumber} | MatchId: {EstadoPartida.MatchId} | {resumen}");
 
