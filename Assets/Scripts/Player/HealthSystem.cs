@@ -138,14 +138,16 @@ public class HealthSystem : MonoBehaviourPun
 
         PhotonView attackerView = PhotonView.Find(attackerViewID);
 
+        // La kill cuenta aunque el arma no dé puntos; ScoreManager ignora
+        // las kills que llegan con la partida ya terminada.
         if (attackerView != null &&
-            attackerView.OwnerActorNr != photonView.OwnerActorNr &&
-            pointsPerKill > 0)
+            attackerView.Owner != null &&
+            attackerView.OwnerActorNr != photonView.OwnerActorNr)
         {
             attackerView.RPC(
-                nameof(ScoreManager.AwardKillPoints),
+                nameof(ScoreManager.AwardPlayerKill),
                 attackerView.Owner,
-                pointsPerKill
+                Mathf.Max(0, pointsPerKill)
             );
         }
 
