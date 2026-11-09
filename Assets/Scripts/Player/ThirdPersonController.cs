@@ -65,6 +65,10 @@ public class ThirdPersonController : MonoBehaviour
 
         if (view != null && !view.IsMine)
         {
+            // La copia remota solo sigue la posición que manda Photon: sin física local,
+            // un dardo no la empuja en esta pantalla si en la de su dueño no se movió.
+            rb.isKinematic = true;
+
             if (cam != null)
                 cam.gameObject.SetActive(false);
 
