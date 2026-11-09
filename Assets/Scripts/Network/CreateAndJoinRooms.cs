@@ -16,6 +16,7 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
     public void CreateRoom()
     {
         Debug.Log("Create Room Clicked");
+        if (!HaySesion()) return;
         Debug.Log("Nombre del room: " + createInput.text);
 
         Debug.Log("Photon connected: " + PhotonNetwork.IsConnected);
@@ -31,6 +32,8 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
 
     public void JoinRoom()
     {
+        if (!HaySesion()) return;
+
         if (!PhotonNetwork.IsConnectedAndReady)
         {
             Debug.LogWarning("Photon todavia no esta listo");
@@ -43,6 +46,15 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
         {
             PhotonNetwork.JoinRoom(joinRoomName);
         }
+    }
+
+    // Sin sesion web no se puede crear ni unirse a una room.
+    private bool HaySesion()
+    {
+        if (SessionManager.Instance != null && SessionManager.Instance.HaySesion) return true;
+
+        Debug.LogWarning("No hay sesion iniciada, no se puede usar la room");
+        return false;
     }
 
     public override void OnCreatedRoom()
