@@ -52,9 +52,13 @@ public class MatchManager : MonoBehaviourPunCallbacks
         MatchStarted = false;
 
         gunSpawned = false;
-        playerUI.phasePanel.SetActive(false);
-
-        if (playerUI.waitingPanel != null) playerUI.waitingPanel.SetActive(true);
+        // El jugador local registra su UI hasta que aparece (RegisterPlayerUI),
+        // así que aquí todavía puede no existir.
+        if (playerUI != null)
+        {
+            if (playerUI.phasePanel != null) playerUI.phasePanel.SetActive(false);
+            if (playerUI.waitingPanel != null) playerUI.waitingPanel.SetActive(true);
+        }
 
         TryStartMatch();
         CheckMatchEnded();
