@@ -125,6 +125,7 @@ public class SessionManager : MonoBehaviour
                     return resultado;
                 }
                 GuardarSesion(resultado.Datos.token, resultado.Datos.jugador);
+                ReintentarReportes();
             }
             return resultado;
         }
@@ -142,7 +143,12 @@ public class SessionManager : MonoBehaviour
         }
 
         // 401 -> SesionInvalida (lo hace ApiClient); sin conexión -> conservamos el token
-        return await RefrescarJugador();
+        var resultado = await RefrescarJugador();
+        if (resultado.Ok)
+        {
+            ReintentarReportes();
+        }
+        return resultado;
     }
 
     public async Awaitable<ApiResultado<JugadorDto>> RefrescarJugador()
@@ -208,6 +214,19 @@ public class SessionManager : MonoBehaviour
         PlayerPrefs.SetString(ClaveUsuario, UltimoUsuario ?? string.Empty);
         PlayerPrefs.Save();
         SesionCambiada?.Invoke();
+    }
+
+    // Manda las partidas que quedaron pendientes, sin bloquear la UI
+    private static async void ReintentarReportes()
+    {
+        try
+        {
+            await ReportePartida.ReintentarPendientes();
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning("[SessionManager] Error al reintentar reportes: " + e.Message);
+        }
     }
 
     // Borra token y jugador; conserva el último usuario
