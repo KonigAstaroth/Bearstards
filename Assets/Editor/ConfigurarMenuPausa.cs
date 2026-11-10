@@ -172,7 +172,18 @@ public static class ConfigurarMenuPausa
         boton.interactable = true;
 
         var etiqueta = go.GetComponentInChildren<Text>(true);
-        if (etiqueta != null) etiqueta.text = texto;
+        if (etiqueta != null)
+        {
+            etiqueta.text = texto;
+            // La etiqueta llena el botón y queda centrada
+            var rtEtiqueta = etiqueta.rectTransform;
+            rtEtiqueta.anchorMin = Vector2.zero;
+            rtEtiqueta.anchorMax = Vector2.one;
+            rtEtiqueta.pivot = new Vector2(0.5f, 0.5f);
+            rtEtiqueta.offsetMin = new Vector2(10f, 6f);
+            rtEtiqueta.offsetMax = new Vector2(-10f, -6f);
+            etiqueta.alignment = TextAnchor.MiddleCenter;
+        }
         return boton;
     }
 
