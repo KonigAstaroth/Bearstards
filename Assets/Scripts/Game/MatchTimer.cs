@@ -4,6 +4,8 @@ using Photon.Realtime;
 using ExitGames.Client.Photon;
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using System.Text;
 
 public class MatchManager : MonoBehaviourPunCallbacks
 {
@@ -11,10 +13,13 @@ public class MatchManager : MonoBehaviourPunCallbacks
 
     private const double MatchDuration = 190.0;
 
-    private const string StartTimeKey = "MatchStartTime";
-    private const string EndedKey = "MatchEnded";
-    private const string WinnerKey = "WinnerActorNumber";
-    private const string TimeUpKey = "TimeIsUp";
+    private const string StartTimeKey = EstadoPartida.ClaveInicio;
+    private const string EndedKey = EstadoPartida.ClaveTerminada;
+    private const string WinnerKey = EstadoPartida.ClaveGanador;
+    private const string TimeUpKey = EstadoPartida.ClaveTiempoAgotado;
+
+    // Largo máximo del nombre de la sala dentro del MatchId (el id no pasa de 64).
+    private const int MaxSalaEnMatchId = 32;
 
     [Header("Match Settings")]
     [SerializeField] private int requiredPlayers = 2;
@@ -27,9 +32,16 @@ public class MatchManager : MonoBehaviourPunCallbacks
     private bool endSequenceStarted;
     private bool finalClearanceShown;
 
+    // El master ya pidió terminar la partida (por tiempo o por abandono).
+    // La caché de la sala tarda un viaje al servidor, así que esto evita dos finales.
+    private bool finSolicitado;
+
     private Coroutine phaseCoroutine;
 
     public bool MatchStarted { get; private set; }
+
+    // true en el master en cuanto pide terminar, antes de que vuelva el eco de la sala.
+    public bool FinSolicitado => finSolicitado;
 
     private void Awake()
     {
@@ -61,6 +73,7 @@ public class MatchManager : MonoBehaviourPunCallbacks
         }
 
         TryStartMatch();
+        RevisarAbandono();
         CheckMatchEnded();
     }
 
@@ -83,14 +96,13 @@ public class MatchManager : MonoBehaviourPunCallbacks
         }
 
         // Check if match has started.
-        if (!properties.TryGetValue(StartTimeKey, out object startValue))
+        if (!properties.TryGetValue(StartTimeKey, out object startValue)
+            || !(startValue is double startTime))
         {
             ShowTime(MatchDuration);
             UpdateWaitingUI(false);
             return;
         }
-
-        double startTime = (double)startValue;
 
         double elapsed = PhotonNetwork.Time - startTime;
 
@@ -150,7 +162,8 @@ public class MatchManager : MonoBehaviourPunCallbacks
         if (remaining <= 0
             && PhotonNetwork.IsMasterClient
             && !properties.ContainsKey(TimeUpKey)
-            && !endSequenceStarted)
+            && !endSequenceStarted
+            && !finSolicitado)
         {
             endSequenceStarted = true;
 
@@ -160,6 +173,8 @@ public class MatchManager : MonoBehaviourPunCallbacks
                     { TimeUpKey, true }
                 }
             );
+
+            Debug.Log("[MatchManager] Se acabó el tiempo.");
 
             StartCoroutine(EndMatchSequence());
         }
@@ -221,11 +236,22 @@ public class MatchManager : MonoBehaviourPunCallbacks
 
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
-        // Match timer does not reset.
+        // El tiempo de la partida no se reinicia.
+        // Si la partida ya estaba en juego, el que se queda gana por abandono.
+        // Aquí ya puede ser master (si el que se fue lo era).
+        if (otherPlayer != null)
+            TerminarPorAbandono(otherPlayer.ActorNumber);
     }
 
     public override void OnMasterClientSwitched(Player newMasterClient)
     {
+        // Si la partida ya empezó, el master nuevo se asegura de que la sala siga cerrada.
+        if (PhotonNetwork.IsMasterClient && EstadoPartida.Iniciada)
+            CerrarSala();
+
+        // Según el orden de los callbacks, el abandono puede verse aquí primero.
+        RevisarAbandono();
+        ContinuarFinPorTiempo();
         TryStartMatch();
         CheckMatchEnded();
     }
@@ -235,6 +261,9 @@ public class MatchManager : MonoBehaviourPunCallbacks
         if (propertiesThatChanged.ContainsKey(StartTimeKey))
         {
             MatchStarted = IsMatchStarted();
+
+            // Alguien pudo irse mientras llegaba el inicio.
+            RevisarAbandono();
         }
 
         if (propertiesThatChanged.ContainsKey(EndedKey))
@@ -257,20 +286,98 @@ public class MatchManager : MonoBehaviourPunCallbacks
             || properties.ContainsKey(EndedKey))
             return;
 
-        if (!PhotonNetwork.CurrentRoom.SetCustomProperties(
-            new ExitGames.Client.Photon.Hashtable
-            {
-                { StartTimeKey, PhotonNetwork.Time }
-            }))
+        Player[] jugadores = PhotonNetwork.PlayerList;
+        int[] actores = new int[jugadores.Length];
+        string matchId = CrearMatchId(PhotonNetwork.CurrentRoom.Name);
+
+        // Todo el estado inicial va en la misma llamada que el inicio.
+        var props = new ExitGames.Client.Photon.Hashtable
         {
+            { StartTimeKey, PhotonNetwork.Time },
+            { EstadoPartida.ClaveMatchId, matchId }
+        };
+
+        for (int i = 0; i < jugadores.Length; i++)
+        {
+            Player jugador = jugadores[i];
+            int actor = jugador.ActorNumber;
+            actores[i] = actor;
+
+            int apiId = PhotonIdentidad.ApiIdDe(jugador);
+            if (apiId == -1)
+            {
+                Debug.LogWarning($"[MatchManager] El actor {actor} ({jugador.NickName}) no tiene apiId; esta partida no se podrá reportar.");
+            }
+
+            props[EstadoPartida.ClaveApiId(actor)] = apiId;
+            props[EstadoPartida.ClaveNombre(actor)] = jugador.NickName ?? "";
+
+            // Solo si faltan, para no pisar lo que ya escribió el dueño.
+            if (!properties.ContainsKey(EstadoPartida.ClavePuntos(actor)))
+                props[EstadoPartida.ClavePuntos(actor)] = 0;
+
+            if (!properties.ContainsKey(EstadoPartida.ClaveKills(actor)))
+                props[EstadoPartida.ClaveKills(actor)] = 0;
+        }
+
+        props[EstadoPartida.ClaveActores] = actores;
+
+        if (!PhotonNetwork.CurrentRoom.SetCustomProperties(props))
+        {
+            Debug.LogWarning("[MatchManager] No se pudo iniciar la partida.");
             return;
         }
+
+        CerrarSala();
+
+        Debug.Log($"[MatchManager] Partida iniciada. MatchId: {matchId} | Actores: {DescribirActores(actores, props)}");
 
         if (!startSequenceStarted)
         {
             startSequenceStarted = true;
             StartCoroutine(StartMatchSequence());
         }
+    }
+
+    // "{sala}-{fecha}-{guid corto}", siempre <= 64 caracteres.
+    private static string CrearMatchId(string sala)
+    {
+        var limpio = new StringBuilder();
+
+        if (!string.IsNullOrEmpty(sala))
+        {
+            foreach (char c in sala)
+            {
+                if (limpio.Length >= MaxSalaEnMatchId)
+                    break;
+
+                limpio.Append(char.IsLetterOrDigit(c) || c == '_' ? c : '_');
+            }
+        }
+
+        if (limpio.Length == 0)
+            limpio.Append("sala");
+
+        string guid = System.Guid.NewGuid().ToString("N").Substring(0, 8);
+        string id = $"{limpio}-{System.DateTime.UtcNow:yyyyMMddHHmmss}-{guid}";
+
+        return id.Length > 64 ? id.Substring(0, 64) : id;
+    }
+
+    private static string DescribirActores(int[] actores, ExitGames.Client.Photon.Hashtable props)
+    {
+        var sb = new StringBuilder();
+
+        foreach (int actor in actores)
+        {
+            if (sb.Length > 0) sb.Append(", ");
+
+            object apiId = props[EstadoPartida.ClaveApiId(actor)];
+            object nombre = props[EstadoPartida.ClaveNombre(actor)];
+            sb.Append($"{actor} ({nombre}, apiId {apiId})");
+        }
+
+        return sb.ToString();
     }
 
     private IEnumerator StartMatchSequence()
@@ -285,9 +392,125 @@ public class MatchManager : MonoBehaviourPunCallbacks
         );
     }
 
-    private void FinishMatch()
+    // Busca entre los que empezaron la partida a alguien que ya no esté.
+    private void RevisarAbandono()
     {
         if (!PhotonNetwork.InRoom || !PhotonNetwork.IsMasterClient)
+            return;
+
+        foreach (int actor in EstadoPartida.Actores)
+        {
+            if (!SigueEnSala(actor))
+            {
+                TerminarPorAbandono(actor);
+                return;
+            }
+        }
+    }
+
+    // Solo el master. Idempotente: si ya se pidió el final no hace nada.
+    private void TerminarPorAbandono(int actorQueSeFue)
+    {
+        if (!PhotonNetwork.InRoom || !PhotonNetwork.IsMasterClient || finSolicitado)
+            return;
+
+        var properties = PhotonNetwork.CurrentRoom.CustomProperties;
+
+        // Irse en la pantalla de espera no cuenta como abandono.
+        if (!properties.ContainsKey(StartTimeKey))
+            return;
+
+        // Ya terminó, o se acabó el tiempo y el final normal sigue su curso.
+        if (properties.ContainsKey(EndedKey) || properties.ContainsKey(TimeUpKey))
+            return;
+
+        IReadOnlyList<int> actores = EstadoPartida.Actores;
+
+        // Solo cuenta si era uno de los jugadores de la partida.
+        bool eraJugador = false;
+        foreach (int actor in actores)
+        {
+            if (actor == actorQueSeFue)
+            {
+                eraJugador = true;
+                break;
+            }
+        }
+
+        if (!eraJugador)
+            return;
+
+        // Gana el que sigue en la sala (el local primero, que es quien escribe).
+        int ganador = -1;
+
+        foreach (int actor in actores)
+        {
+            if (actor != actorQueSeFue && SigueEnSala(actor))
+            {
+                ganador = actor;
+                if (actor == EstadoPartida.ActorLocal)
+                    break;
+            }
+        }
+
+        finSolicitado = true;
+        CerrarSala();
+
+        PhotonNetwork.CurrentRoom.SetCustomProperties(
+            new ExitGames.Client.Photon.Hashtable
+            {
+                { EstadoPartida.ClaveAbandono, actorQueSeFue },
+                { WinnerKey, ganador },
+                { EndedKey, true }
+            }
+        );
+
+        Debug.Log($"[MatchManager] Abandono del actor {actorQueSeFue}. Ganador: {ganador} | MatchId: {EstadoPartida.MatchId}");
+    }
+
+    // Nadie más puede entrar ni ver la sala una vez empezada la partida. Solo el master.
+    private static void CerrarSala()
+    {
+        if (!PhotonNetwork.InRoom || !PhotonNetwork.IsMasterClient)
+            return;
+
+        Room sala = PhotonNetwork.CurrentRoom;
+        if (!sala.IsOpen && !sala.IsVisible)
+            return;
+
+        sala.IsOpen = false;
+        sala.IsVisible = false;
+
+        Debug.Log("[MatchManager] Sala cerrada.");
+    }
+
+    private static bool SigueEnSala(int actor)
+    {
+        Player jugador = EstadoPartida.BuscarJugador(actor);
+        return jugador != null && !jugador.IsInactive;
+    }
+
+    // Si el master se fue durante la espera de "Time's Up", el nuevo master termina.
+    private void ContinuarFinPorTiempo()
+    {
+        if (!PhotonNetwork.InRoom || !PhotonNetwork.IsMasterClient)
+            return;
+
+        var properties = PhotonNetwork.CurrentRoom.CustomProperties;
+
+        if (!properties.ContainsKey(TimeUpKey) || properties.ContainsKey(EndedKey))
+            return;
+
+        if (endSequenceStarted || finSolicitado)
+            return;
+
+        endSequenceStarted = true;
+        StartCoroutine(EndMatchSequence());
+    }
+
+    private void FinishMatch()
+    {
+        if (!PhotonNetwork.InRoom || !PhotonNetwork.IsMasterClient || finSolicitado)
             return;
 
         var properties = PhotonNetwork.CurrentRoom.CustomProperties;
@@ -295,25 +518,30 @@ public class MatchManager : MonoBehaviourPunCallbacks
         if (properties.ContainsKey(EndedKey))
             return;
 
+        // Se usa la foto del inicio, así cuenta también quien ya se fue.
+        var actores = new List<int>(EstadoPartida.Actores);
+        if (actores.Count == 0)
+        {
+            foreach (Player player in PhotonNetwork.PlayerList)
+                actores.Add(player.ActorNumber);
+        }
+
         int highestScore = int.MinValue;
         int winnerActorNumber = -1;
         bool tie = false;
+        var resumen = new StringBuilder();
 
-        foreach (Player player in PhotonNetwork.PlayerList)
+        foreach (int actor in actores)
         {
-            string scoreKey = $"Score_{player.ActorNumber}";
+            int score = EstadoPartida.Puntos(actor);
 
-            int score = 0;
-
-            if (properties.TryGetValue(scoreKey, out object value))
-            {
-                score = (int)value;
-            }
+            if (resumen.Length > 0) resumen.Append(", ");
+            resumen.Append($"{actor}: {score} pts / {EstadoPartida.Kills(actor)} kills");
 
             if (score > highestScore)
             {
                 highestScore = score;
-                winnerActorNumber = player.ActorNumber;
+                winnerActorNumber = actor;
                 tie = false;
             }
             else if (score == highestScore)
@@ -327,7 +555,10 @@ public class MatchManager : MonoBehaviourPunCallbacks
             winnerActorNumber = -1;
         }
 
-        Debug.Log($"[MatchManager] Match ended. Winner: {winnerActorNumber}");
+        finSolicitado = true;
+        CerrarSala();
+
+        Debug.Log($"[MatchManager] Partida terminada por tiempo. Ganador: {winnerActorNumber} | MatchId: {EstadoPartida.MatchId} | {resumen}");
 
         PhotonNetwork.CurrentRoom.SetCustomProperties(
             new ExitGames.Client.Photon.Hashtable
@@ -391,10 +622,11 @@ public class MatchManager : MonoBehaviourPunCallbacks
 
         var properties = PhotonNetwork.CurrentRoom.CustomProperties;
 
-        if (!properties.TryGetValue(StartTimeKey, out object startValue))
+        if (!properties.TryGetValue(StartTimeKey, out object startValue)
+            || !(startValue is double startTime))
             return MatchDuration;
 
-        double elapsed = PhotonNetwork.Time - (double)startValue;
+        double elapsed = PhotonNetwork.Time - startTime;
 
         return System.Math.Max(0, MatchDuration - elapsed);
     }

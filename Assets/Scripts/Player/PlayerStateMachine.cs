@@ -111,6 +111,7 @@ public class PlayerStateMachine : MonoBehaviour
         // Solo se permite iniciar un salto desde Grounded.
         if (CurrentState == PlayerState.Grounded
             && !jumpRoutineRunning
+            && !MenuPausa.Abierto
             && Keyboard.current != null
             && Keyboard.current.spaceKey.wasPressedThisFrame
             && controller.IsGrounded())

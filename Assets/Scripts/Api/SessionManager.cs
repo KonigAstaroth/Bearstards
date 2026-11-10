@@ -109,7 +109,7 @@ public class SessionManager : MonoBehaviour
     {
         if (Ocupado)
         {
-            return new ApiResultado<SesionDto> { Status = -1, Error = "Ya hay una operación en curso." };
+            return new ApiResultado<SesionDto> { Status = -1, Error = "Another request is in progress." };
         }
 
         Ocupado = true;
@@ -121,10 +121,11 @@ public class SessionManager : MonoBehaviour
                 if (resultado.Datos == null || string.IsNullOrEmpty(resultado.Datos.token) || resultado.Datos.jugador == null)
                 {
                     resultado.Ok = false;
-                    resultado.Error = "Respuesta inválida del servidor.";
+                    resultado.Error = "Invalid response from the server.";
                     return resultado;
                 }
                 GuardarSesion(resultado.Datos.token, resultado.Datos.jugador);
+                ReintentarReportes();
             }
             return resultado;
         }
@@ -138,11 +139,16 @@ public class SessionManager : MonoBehaviour
     {
         if (!TieneTokenGuardado)
         {
-            return new ApiResultado<JugadorDto> { Status = -1, Error = "No hay sesión guardada." };
+            return new ApiResultado<JugadorDto> { Status = -1, Error = "No saved session." };
         }
 
         // 401 -> SesionInvalida (lo hace ApiClient); sin conexión -> conservamos el token
-        return await RefrescarJugador();
+        var resultado = await RefrescarJugador();
+        if (resultado.Ok)
+        {
+            ReintentarReportes();
+        }
+        return resultado;
     }
 
     public async Awaitable<ApiResultado<JugadorDto>> RefrescarJugador()
@@ -208,6 +214,19 @@ public class SessionManager : MonoBehaviour
         PlayerPrefs.SetString(ClaveUsuario, UltimoUsuario ?? string.Empty);
         PlayerPrefs.Save();
         SesionCambiada?.Invoke();
+    }
+
+    // Manda las partidas que quedaron pendientes, sin bloquear la UI
+    private static async void ReintentarReportes()
+    {
+        try
+        {
+            await ReportePartida.ReintentarPendientes();
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning("[SessionManager] Error al reintentar reportes: " + e.Message);
+        }
     }
 
     // Borra token y jugador; conserva el último usuario

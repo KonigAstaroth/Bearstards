@@ -91,6 +91,15 @@ public class ThirdPersonController : MonoBehaviour
         if (view == null || !view.IsMine)
             return;
 
+        // Con el menú de pausa abierto el jugador se queda quieto y no gira la cámara.
+        if (MenuPausa.Abierto)
+        {
+            moveInput = Vector3.zero;
+            isRunning = false;
+            RunDustParticles();
+            return;
+        }
+
         ReadMovementInput();
         RunDustParticles();
         Look();
