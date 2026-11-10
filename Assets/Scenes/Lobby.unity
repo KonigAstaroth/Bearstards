@@ -530,7 +530,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: "Puntos: 0 \xB7 Partidas: 0 \xB7 Kills: 0\nVictorias: 0 \xB7 Derrotas: 0 \xB7 Empates: 0"
+  m_Text: "Score: 0 \xB7 Matches: 0 \xB7 Kills: 0\nVictories: 0 \xB7 Defeats: 0 \xB7 Ties: 0"
 --- !u!222 &594577135
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1976,7 +1976,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "Cerrar sesi\xF3n"
+  m_Text: LOGOUT
 --- !u!222 &1461896286
 CanvasRenderer:
   m_ObjectHideFlags: 0

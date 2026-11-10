@@ -88,8 +88,8 @@ public class LobbyPerfil : MonoBehaviour
         if (estadisticasTexto != null)
         {
             estadisticasTexto.text =
-                $"Puntos: {jugador.puntos_totales} · Partidas: {jugador.partidas} · Kills: {jugador.kills}\n" +
-                $"Victorias: {jugador.victorias} · Derrotas: {jugador.derrotas} · Empates: {jugador.empates}";
+                $"Score: {jugador.puntos_totales} · Matches: {jugador.partidas} · Kills: {jugador.kills}\n" +
+                $"Victories: {jugador.victorias} · Defeats: {jugador.derrotas} · Ties: {jugador.empates}";
         }
     }
 
