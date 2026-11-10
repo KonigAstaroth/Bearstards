@@ -66,8 +66,10 @@ public class ResultsManager : MonoBehaviourPunCallbacks
 
         if (winnerActorNumber == -1)
         {
-            resultText.text = "TIE!";
+            resultText.text = "IT'S A TIE!";
             resultText.color = Color.green;
+            localBearController.SetTrigger("TIE");
+            enemyBearController.SetTrigger("TIE");
         }
         else if (winnerActorNumber == myActorNumber)
         {
