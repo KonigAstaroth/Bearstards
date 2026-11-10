@@ -106,7 +106,7 @@ public class LoginUI : MonoBehaviour
 
         OcultarPaneles();
         if (botonReintentar != null) botonReintentar.gameObject.SetActive(false);
-        MostrarMensaje("Comprobando sesión...");
+        MostrarMensaje("Checking session...");
         SetOcupado(true);
 
         try
@@ -122,14 +122,14 @@ public class LoginUI : MonoBehaviour
 
             if (resultado.SinConexion)
             {
-                MostrarMensaje("Sin conexión con el servidor.");
+                MostrarMensaje("Connection error.");
                 if (botonReintentar != null) botonReintentar.gameObject.SetActive(true);
                 return;
             }
 
             MostrarLogin();
             if (resultado.Status == 401 || resultado.Status == 403)
-                MostrarMensaje("Tu sesión expiró. Vuelve a iniciar sesión.");
+                MostrarMensaje("Session expired. Login again.");
             else if (resultado.Status != -1 && !string.IsNullOrEmpty(resultado.Error))
                 MostrarMensaje(resultado.Error);
         }
@@ -138,7 +138,7 @@ public class LoginUI : MonoBehaviour
             Debug.LogException(e);
             if (this == null) return;
             MostrarLogin();
-            MostrarMensaje("No se pudo comprobar la sesión.");
+            MostrarMensaje("Session check failed.");
         }
         finally
         {
@@ -153,8 +153,8 @@ public class LoginUI : MonoBehaviour
         string usuario = Texto(usuarioLogin);
         string password = passwordLogin != null ? passwordLogin.text : "";
 
-        if (usuario.Length == 0) { Error("Escribe tu usuario.", usuarioLogin); return; }
-        if (password.Length == 0) { Error("Escribe tu contraseña.", passwordLogin); return; }
+        if (usuario.Length == 0) { Error("Missing username.", usuarioLogin); return; }
+        if (password.Length == 0) { Error("Missing password.", passwordLogin); return; }
 
         MostrarMensaje("Entrando...");
         SetOcupado(true);
@@ -164,12 +164,12 @@ public class LoginUI : MonoBehaviour
             if (this == null) return;
 
             if (resultado.Ok) { IrASiguienteEscena(); return; }
-            MostrarMensaje(MensajeError(resultado.Error, resultado.SinConexion, "No se pudo iniciar sesión."));
+            MostrarMensaje(MensajeError(resultado.Error, resultado.SinConexion, "Couldn't login."));
         }
         catch (Exception e)
         {
             Debug.LogException(e);
-            if (this != null) MostrarMensaje("No se pudo iniciar sesión.");
+            if (this != null) MostrarMensaje("Couldn't login.");
         }
         finally
         {
@@ -186,14 +186,14 @@ public class LoginUI : MonoBehaviour
         string password = passwordRegistro != null ? passwordRegistro.text : "";
         string confirmar = passwordConfirmar != null ? passwordConfirmar.text : "";
 
-        if (usuario.Length == 0) { Error("Escribe un nombre de usuario.", usuarioRegistro); return; }
+        if (usuario.Length == 0) { Error("Missing username.", usuarioRegistro); return; }
         if (email.Length > 0 && (!email.Contains("@") || !email.Contains(".")))
-        { Error("El correo no parece válido.", emailRegistro); return; }
+        { Error("Invalid email.", emailRegistro); return; }
         if (password.Length < minimoPassword)
-        { Error($"La contraseña debe tener al menos {minimoPassword} caracteres.", passwordRegistro); return; }
-        if (password != confirmar) { Error("Las contraseñas no coinciden.", passwordConfirmar); return; }
+        { Error($"Password must be at least {minimoPassword} characters.", passwordRegistro); return; }
+        if (password != confirmar) { Error("Passwords doesn't match.", passwordConfirmar); return; }
 
-        MostrarMensaje("Creando cuenta...");
+        MostrarMensaje("Creating account...");
         SetOcupado(true);
         try
         {
@@ -201,12 +201,12 @@ public class LoginUI : MonoBehaviour
             if (this == null) return;
 
             if (resultado.Ok) { IrASiguienteEscena(); return; }
-            MostrarMensaje(MensajeError(resultado.Error, resultado.SinConexion, "No se pudo crear la cuenta."));
+            MostrarMensaje(MensajeError(resultado.Error, resultado.SinConexion, "Couldn't create account."));
         }
         catch (Exception e)
         {
             Debug.LogException(e);
-            if (this != null) MostrarMensaje("No se pudo crear la cuenta.");
+            if (this != null) MostrarMensaje("Couldn't create account.");
         }
         finally
         {
@@ -218,7 +218,7 @@ public class LoginUI : MonoBehaviour
     {
         if (cambiandoEscena) return;
         cambiandoEscena = true;
-        MostrarMensaje("Conectando...");
+        MostrarMensaje("Connecting...");
         SceneManager.LoadScene(escenaSiguiente);
     }
 
@@ -285,7 +285,7 @@ public class LoginUI : MonoBehaviour
 
     private static string MensajeError(string error, bool sinConexion, string porDefecto)
     {
-        if (sinConexion) return "Sin conexión con el servidor.";
+        if (sinConexion) return "Failed server connection.";
         return string.IsNullOrEmpty(error) ? porDefecto : error;
     }
 
