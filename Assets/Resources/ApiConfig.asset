@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ApiConfig
   urlProduccion: https://littlebearstards.com/api
   urlLocal: http://localhost:8000/api
-  usarLocal: 0
+  usarLocal: 1
   timeoutSegundos: 15
