@@ -81,12 +81,12 @@ public class ResultsManager : MonoBehaviourPunCallbacks
         {
             resultText.text = "IT'S A TIE!";
             resultText.color = Color.green;
-            localBearController.SetTrigger("TIE");
-            enemyBearController.SetTrigger("TIE");
+            Animar(localBearController, "TIE");
+            Animar(enemyBearController, "TIE");
         }
         else if (winnerActorNumber == myActorNumber)
         {
-            resultText.text = porAbandono ? "VICTORY!\n<size=40%>(abandono del rival)</size>" : "VICTORY!";
+            resultText.text = porAbandono ? "VICTORY!\n<size=40%>(your opponent left)</size>" : "VICTORY!";
             resultText.color = HexToColor("#FFA400");
             Animar(localBearController, "Victory");
             Animar(enemyBearController, "Defeat");
@@ -94,7 +94,7 @@ public class ResultsManager : MonoBehaviourPunCallbacks
         else
         {
             resultText.text = porAbandono && abandono == myActorNumber
-                ? "DEFEAT\n<size=40%>(abandonaste la partida)</size>"
+                ? "DEFEAT\n<size=40%>(you left the match)</size>"
                 : "DEFEAT";
             resultText.color = Color.red;
             Animar(localBearController, "Defeat");
@@ -112,7 +112,7 @@ public class ResultsManager : MonoBehaviourPunCallbacks
         if (reporteIniciado) return;
         reporteIniciado = true;
 
-        MostrarEstadisticas("Guardando partida...");
+        MostrarEstadisticas("Saving match...");
 
         // MatchEnded debería venir junto con el ganador; por si acaso esperamos un poco
         float limite = Time.realtimeSinceStartup + EsperaTerminada;
@@ -141,10 +141,14 @@ public class ResultsManager : MonoBehaviourPunCallbacks
                 await MostrarGuardada();
                 break;
             case ResultadoEnvio.Pendiente:
-                MostrarEstadisticas("Sin conexión: se guardará después");
+                // Si la API invalidó la sesión al intentarlo, no fue falta de conexión
+                bool sinSesion = SessionManager.Instance == null || !SessionManager.Instance.HaySesion;
+                MostrarEstadisticas(sinSesion
+                    ? "Session expired: log in again to save this match"
+                    : "Offline: it will be saved later");
                 break;
             default:
-                MostrarEstadisticas("No se pudo guardar la partida");
+                MostrarEstadisticas("Could not save the match");
                 break;
         }
     }
@@ -154,7 +158,7 @@ public class ResultsManager : MonoBehaviourPunCallbacks
         SessionManager sesion = SessionManager.Instance;
         if (sesion == null || !sesion.TieneTokenGuardado)
         {
-            MostrarEstadisticas("Partida guardada");
+            MostrarEstadisticas("Match saved");
             return;
         }
 
@@ -171,12 +175,12 @@ public class ResultsManager : MonoBehaviourPunCallbacks
         JugadorDto jugador = SessionManager.Instance != null ? SessionManager.Instance.Jugador : null;
         if (jugador == null)
         {
-            MostrarEstadisticas("Partida guardada");
+            MostrarEstadisticas("Match saved");
             return;
         }
 
-        MostrarEstadisticas("Partida guardada\n"
-            + $"Puntos totales: {jugador.puntos_totales} · Partidas: {jugador.partidas} · Victorias: {jugador.victorias}");
+        MostrarEstadisticas("Match saved\n"
+            + $"Total score: {jugador.puntos_totales} · Matches: {jugador.partidas} · Victories: {jugador.victorias}");
     }
 
     private void MostrarEstadisticas(string texto)

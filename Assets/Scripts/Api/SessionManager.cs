@@ -109,7 +109,7 @@ public class SessionManager : MonoBehaviour
     {
         if (Ocupado)
         {
-            return new ApiResultado<SesionDto> { Status = -1, Error = "Ya hay una operación en curso." };
+            return new ApiResultado<SesionDto> { Status = -1, Error = "Another request is in progress." };
         }
 
         Ocupado = true;
@@ -121,7 +121,7 @@ public class SessionManager : MonoBehaviour
                 if (resultado.Datos == null || string.IsNullOrEmpty(resultado.Datos.token) || resultado.Datos.jugador == null)
                 {
                     resultado.Ok = false;
-                    resultado.Error = "Respuesta inválida del servidor.";
+                    resultado.Error = "Invalid response from the server.";
                     return resultado;
                 }
                 GuardarSesion(resultado.Datos.token, resultado.Datos.jugador);
@@ -139,7 +139,7 @@ public class SessionManager : MonoBehaviour
     {
         if (!TieneTokenGuardado)
         {
-            return new ApiResultado<JugadorDto> { Status = -1, Error = "No hay sesión guardada." };
+            return new ApiResultado<JugadorDto> { Status = -1, Error = "No saved session." };
         }
 
         // 401 -> SesionInvalida (lo hace ApiClient); sin conexión -> conservamos el token

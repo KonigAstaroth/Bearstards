@@ -14,7 +14,7 @@ public class Vacio { }
 // Cliente HTTP mínimo para la API de Bearstards
 public static class ApiClient
 {
-    private const string SinConexionMensaje = "Sin conexión con el servidor.";
+    private const string SinConexionMensaje = "Can't connect to the server.";
 
     // "campo": ["msg1", "msg2"]
     private static readonly Regex RegexCampo = new Regex(
@@ -103,7 +103,7 @@ public static class ApiClient
                     {
                         Debug.LogWarning($"[API] Respuesta inválida en {ruta}: {e.Message}");
                         resultado.Ok = false;
-                        resultado.Error = "Respuesta inválida del servidor.";
+                        resultado.Error = "Invalid response from the server.";
                     }
                 }
                 return resultado;
@@ -161,8 +161,8 @@ public static class ApiClient
             }
         }
 
-        if (status == 429) return "Demasiados intentos. Espera un momento.";
-        if (status >= 500) return $"Error del servidor ({status}).";
+        if (status == 429) return "Too many attempts. Please wait a moment.";
+        if (status >= 500) return $"Server error ({status}).";
         return $"Error {status}";
     }
 

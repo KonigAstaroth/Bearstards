@@ -85,7 +85,7 @@ public class WeaponController : MonoBehaviourPun
 
     private void Update()
     {
-        if (!photonView.IsMine)
+        if (!photonView.IsMine || MenuPausa.Abierto)
             return;
 
         if (!Input.GetMouseButtonDown(0))

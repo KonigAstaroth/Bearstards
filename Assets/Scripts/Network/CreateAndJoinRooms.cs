@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
 {
     private const int LargoMaximo = 24;
-    private const string MsgCuentaRepetida = "Esa cuenta ya está dentro de la sala.";
+    private const string MsgCuentaRepetida = "That account is already in this room.";
 
     public InputField createInput;
     public InputField joinInput;
@@ -57,11 +57,11 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
 
         if (PhotonNetwork.CreateRoom(nombre, opciones))
         {
-            Esperar("Creando sala...");
+            Esperar("Creating room...");
         }
         else
         {
-            MostrarAviso("No se pudo crear la sala. Intenta de nuevo.");
+            MostrarAviso("Could not create the room. Try again.");
         }
     }
 
@@ -77,11 +77,11 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
 
         if (PhotonNetwork.JoinRoom(nombre))
         {
-            Esperar("Entrando a la sala...");
+            Esperar("Joining room...");
         }
         else
         {
-            MostrarAviso("No se pudo entrar a la sala. Intenta de nuevo.");
+            MostrarAviso("Could not join the room. Try again.");
         }
     }
 
@@ -91,14 +91,14 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
         if (SessionManager.Instance == null || !SessionManager.Instance.HaySesion)
         {
             Debug.LogWarning("No hay sesion iniciada, no se puede usar la room");
-            MostrarAviso("Inicia sesión para jugar.");
+            MostrarAviso("Log in to play.");
             return false;
         }
 
         if (!PhotonNetwork.IsConnectedAndReady)
         {
             Debug.LogWarning("Photon todavia no esta listo");
-            MostrarAviso("Todavía conectando con el servidor, espera un momento.");
+            MostrarAviso("Still connecting to the server, please wait.");
             return false;
         }
 
@@ -112,13 +112,13 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
 
         if (nombre.Length == 0)
         {
-            MostrarAviso("Escribe el nombre de la sala.");
+            MostrarAviso("Enter a room name.");
             return null;
         }
 
         if (nombre.Length > LargoMaximo)
         {
-            MostrarAviso($"El nombre de la sala es muy largo (máximo {LargoMaximo}).");
+            MostrarAviso($"Room name is too long (max {LargoMaximo} characters).");
             return null;
         }
 
@@ -179,7 +179,7 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
     {
         PhotonNetwork.AutomaticallySyncScene = true;
         if (!esperando) return;
-        Terminar("Se perdió la conexión con el servidor.");
+        Terminar("Lost connection to the server.");
     }
 
     private bool HayCuentaRepetida()
@@ -199,13 +199,13 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
     {
         switch ((int)codigo)
         {
-            case ErrorCode.GameIdAlreadyExists: return "Ya existe una sala con ese nombre.";
-            case ErrorCode.GameDoesNotExist: return "No existe esa sala (o ya terminó).";
-            case ErrorCode.GameFull: return "La sala está llena.";
-            case ErrorCode.GameClosed: return "La sala ya está en partida.";
+            case ErrorCode.GameIdAlreadyExists: return "A room with that name already exists.";
+            case ErrorCode.GameDoesNotExist: return "That room does not exist (or already ended).";
+            case ErrorCode.GameFull: return "The room is full.";
+            case ErrorCode.GameClosed: return "That match has already started.";
             case ErrorCode.JoinFailedFoundActiveJoiner:
             case ErrorCode.JoinFailedPeerAlreadyJoined: return MsgCuentaRepetida;
-            default: return $"No se pudo entrar a la sala ({codigo}).";
+            default: return $"Could not join the room ({codigo}).";
         }
     }
 

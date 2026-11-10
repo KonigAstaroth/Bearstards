@@ -47,7 +47,7 @@ public class NeedleMelee : MonoBehaviourPun
 
     private void Update()
     {
-        if (playerView == null || !playerView.IsMine)
+        if (playerView == null || !playerView.IsMine || MenuPausa.Abierto)
             return;
 
         if (Mouse.current != null &&
