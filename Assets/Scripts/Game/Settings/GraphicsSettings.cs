@@ -14,22 +14,32 @@ public class GraphicsSettings : MonoBehaviour
     [SerializeField] private GameObject settingsPanel;
     [SerializeField] private GameObject backgroundPanel;
 
+    [Header("Resolution")]
+    [SerializeField] private FullScreenMode screenMode = FullScreenMode.Windowed;
+
     private Resolution[] resolutions;
 
-    private const string ResolutionKey = "ResolutionIndex";
+    private const string ResolutionWidthKey = "ResolutionWidth";
+    private const string ResolutionHeightKey = "ResolutionHeight";
     private const string FPSKey = "TargetFPS";
     private const string VSyncKey = "VSync";
 
-    private readonly int[] fpsOptions = { 30, 60, 120, 144, 165, 240, -1 };
+    private readonly int[] fpsOptions =
+    {
+        30, 60, 120, 144, 165, 240, -1
+    };
 
+    private int selectedResolutionIndex;
     private bool isInitializing;
 
     private void Awake()
     {
-        settingsPanel.SetActive(false);
-        resolutions = Screen.resolutions;
+        if (settingsPanel != null)
+            settingsPanel.SetActive(false);
 
-        LoadSettings();
+        resolutions = Screen.resolutions;
+        DontDestroyOnLoad(transform.gameObject);
+
         ApplySettings();
     }
 
@@ -59,24 +69,39 @@ public class GraphicsSettings : MonoBehaviour
 
             List<string> options = new List<string>();
 
-            int currentResolutionIndex = 0;
+            int savedWidth = PlayerPrefs.GetInt(
+                ResolutionWidthKey, Screen.width);
+
+            int savedHeight = PlayerPrefs.GetInt(
+                ResolutionHeightKey, Screen.height);
+
+            selectedResolutionIndex = 0;
 
             for (int i = 0; i < resolutions.Length; i++)
             {
-                string option = resolutions[i].width + " x " +
-                                resolutions[i].height;
+                Resolution resolution = resolutions[i];
 
-                options.Add(option);
+                string option = resolution.width + " x " +
+                                resolution.height;
 
-                if (resolutions[i].width == Screen.currentResolution.width &&
-                    resolutions[i].height == Screen.currentResolution.height)
+                if (!options.Contains(option))
+                    options.Add(option);
+
+                if (resolution.width == savedWidth &&
+                    resolution.height == savedHeight)
                 {
-                    currentResolutionIndex = i;
+                    selectedResolutionIndex = options.Count - 1;
                 }
             }
 
+            if (options.Count == 0)
+            {
+                options.Add(Screen.width + " x " + Screen.height);
+                selectedResolutionIndex = 0;
+            }
+
             resolutionDropdown.AddOptions(options);
-            resolutionDropdown.value = currentResolutionIndex;
+            resolutionDropdown.value = selectedResolutionIndex;
             resolutionDropdown.RefreshShownValue();
         }
 
@@ -95,85 +120,53 @@ public class GraphicsSettings : MonoBehaviour
             fpsDropdown.AddOptions(options);
 
             int savedFPS = PlayerPrefs.GetInt(FPSKey, 144);
-            int fpsIndex = System.Array.IndexOf(fpsOptions, savedFPS);
+            int index = System.Array.IndexOf(fpsOptions, savedFPS);
 
-            fpsDropdown.value = fpsIndex >= 0 ? fpsIndex : 3;
+            fpsDropdown.value = index >= 0 ? index : 3;
             fpsDropdown.RefreshShownValue();
         }
 
         // VSYNC
         if (vSyncToggle != null)
         {
-            vSyncToggle.isOn = PlayerPrefs.GetInt(VSyncKey, 0) == 1;
+            vSyncToggle.isOn =
+                PlayerPrefs.GetInt(VSyncKey, 0) == 1;
         }
 
         isInitializing = false;
     }
 
+    // Called by Resolution Dropdown
     public void SetResolution(int index)
     {
-        if (isInitializing || index < 0 || index >= resolutions.Length)
+        if (isInitializing || index < 0)
             return;
 
-        PlayerPrefs.SetInt(ResolutionKey, index);
-
-        Resolution resolution = resolutions[index];
-
-        Screen.SetResolution(
-            resolution.width,
-            resolution.height,
-            Screen.fullScreenMode
-        );
-
-        PlayerPrefs.Save();
+        selectedResolutionIndex = index;
     }
 
+    // Called by FPS Dropdown
     public void SetFPS(int index)
     {
-        if (isInitializing || index < 0 || index >= fpsOptions.Length)
+        if (isInitializing || index < 0 ||
+            index >= fpsOptions.Length)
             return;
 
-        int fps = fpsOptions[index];
-
-        PlayerPrefs.SetInt(FPSKey, fps);
-
-        ApplySettings();
-        PlayerPrefs.Save();
+        PlayerPrefs.SetInt(FPSKey, fpsOptions[index]);
     }
 
+    // Called by VSync Toggle
     public void SetVSync(bool enabled)
     {
         if (isInitializing)
             return;
 
         PlayerPrefs.SetInt(VSyncKey, enabled ? 1 : 0);
-
-        ApplySettings();
-        PlayerPrefs.Save();
-    }
-
-    private void LoadSettings()
-    {
-        if (resolutions.Length == 0)
-            return;
-
-        int resolutionIndex = PlayerPrefs.GetInt(ResolutionKey, -1);
-
-        if (resolutionIndex >= 0 && resolutionIndex < resolutions.Length)
-        {
-            Resolution resolution = resolutions[resolutionIndex];
-
-            Screen.SetResolution(
-                resolution.width,
-                resolution.height,
-                Screen.fullScreenMode
-            );
-        }
     }
 
     private void ApplySettings()
     {
-        // MENUS ALWAYS RUN AT 60 FPS
+        // MENUS: ALWAYS 60 FPS
         if (IsMenuScene())
         {
             QualitySettings.vSyncCount = 0;
@@ -181,12 +174,34 @@ public class GraphicsSettings : MonoBehaviour
             return;
         }
 
+        // RESOLUTION
+        if (resolutions.Length > 0)
+        {
+            int width = PlayerPrefs.GetInt(
+                ResolutionWidthKey, Screen.width);
+
+            int height = PlayerPrefs.GetInt(
+                ResolutionHeightKey, Screen.height);
+
+            if (Screen.width != width || Screen.height != height)
+            {
+                Screen.SetResolution(width, height, screenMode);
+            }
+        }
+
+        // FPS AND VSYNC
         int targetFPS = PlayerPrefs.GetInt(FPSKey, 144);
         bool vSync = PlayerPrefs.GetInt(VSyncKey, 0) == 1;
 
         QualitySettings.vSyncCount = vSync ? 1 : 0;
 
         Application.targetFrameRate = vSync ? -1 : targetFPS;
+
+        Debug.Log(
+            $"GRAPHICS SETTINGS | FPS: {Application.targetFrameRate} | " +
+            $"VSync: {QualitySettings.vSyncCount} | " +
+            $"Resolution: {Screen.width}x{Screen.height}"
+        );
     }
 
     private void OnEnable()
@@ -212,6 +227,22 @@ public class GraphicsSettings : MonoBehaviour
 
     public void CloseSettings()
     {
+        // SAVE SELECTED RESOLUTION
+        if (resolutions.Length > 0)
+        {
+            int index = Mathf.Clamp(
+                selectedResolutionIndex, 0, resolutions.Length - 1);
+
+            Resolution resolution = resolutions[index];
+
+            PlayerPrefs.SetInt(ResolutionWidthKey, resolution.width);
+            PlayerPrefs.SetInt(ResolutionHeightKey, resolution.height);
+        }
+
+        // APPLY ALL SETTINGS
+        PlayerPrefs.Save();
+        ApplySettings();
+
         backgroundPanel.SetActive(false);
         settingsPanel.SetActive(false);
     }
