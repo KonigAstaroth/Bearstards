@@ -936,7 +936,19 @@ MonoBehaviour:
       m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_OnValueChanged:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1025322665}
+        m_TargetAssemblyTypeName: GraphicsSettings, Assembly-CSharp
+        m_MethodName: SetResolution
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_AlphaFadeSpeed: 0.15
 --- !u!114 &396014793
 MonoBehaviour:
@@ -1486,7 +1498,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &492165570
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2810,6 +2822,7 @@ MonoBehaviour:
   vSyncToggle: {fileID: 2012152768}
   settingsPanel: {fileID: 492165569}
   backgroundPanel: {fileID: 1025482100}
+  screenMode: 3
 --- !u!4 &1025322666
 Transform:
   m_ObjectHideFlags: 0
@@ -3447,7 +3460,19 @@ MonoBehaviour:
       m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_OnValueChanged:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1025322665}
+        m_TargetAssemblyTypeName: GraphicsSettings, Assembly-CSharp
+        m_MethodName: SetFPS
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_AlphaFadeSpeed: 0.15
 --- !u!114 &1135983159
 MonoBehaviour:
@@ -5990,63 +6015,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1843429099}
   m_CullTransparentMesh: 1
---- !u!1001 &1851549827
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 3073776792885459722, guid: bb02d85673afd2e4c98a14d93020b9fd, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 3.16449
-      objectReference: {fileID: 0}
-    - target: {fileID: 3073776792885459722, guid: bb02d85673afd2e4c98a14d93020b9fd, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3073776792885459722, guid: bb02d85673afd2e4c98a14d93020b9fd, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -8.9525
-      objectReference: {fileID: 0}
-    - target: {fileID: 3073776792885459722, guid: bb02d85673afd2e4c98a14d93020b9fd, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3073776792885459722, guid: bb02d85673afd2e4c98a14d93020b9fd, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3073776792885459722, guid: bb02d85673afd2e4c98a14d93020b9fd, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3073776792885459722, guid: bb02d85673afd2e4c98a14d93020b9fd, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3073776792885459722, guid: bb02d85673afd2e4c98a14d93020b9fd, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3073776792885459722, guid: bb02d85673afd2e4c98a14d93020b9fd, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3073776792885459722, guid: bb02d85673afd2e4c98a14d93020b9fd, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8241518955013794692, guid: bb02d85673afd2e4c98a14d93020b9fd, type: 3}
-      propertyPath: m_Name
-      value: MenuFPSManager
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: bb02d85673afd2e4c98a14d93020b9fd, type: 3}
 --- !u!1 &1860545975
 GameObject:
   m_ObjectHideFlags: 0
@@ -6726,4 +6694,3 @@ SceneRoots:
   - {fileID: 1625184628}
   - {fileID: 720373920}
   - {fileID: 1781741703}
-  - {fileID: 1851549827}
