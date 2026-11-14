@@ -2506,6 +2506,7 @@ MonoBehaviour:
   shieldAmount: 50
   helmetModel: {fileID: 5641254616868959770}
   isNpc: 0
+  npcKillPenalty: 100
 --- !u!114 &2897531587722198831
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2680,12 +2681,12 @@ MonoBehaviour:
     SynchronizeType: 2
     Name: Vertical
   - Type: 4
-    SynchronizeType: 0
+    SynchronizeType: 2
     Name: MeleeAttack
   m_SynchronizeLayers:
   - SynchronizeType: 2
     LayerIndex: 0
-  - SynchronizeType: 0
+  - SynchronizeType: 2
     LayerIndex: 1
 --- !u!114 &-7385552671645107849
 MonoBehaviour:
