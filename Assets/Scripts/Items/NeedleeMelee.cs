@@ -88,7 +88,6 @@ public class NeedleMelee : MonoBehaviourPun
         nextAttackTime = Time.time + attackCooldown;
         hitPlayers.Clear();
 
-        Debug.Log("ATAQUE INICIADO");
 
         if (hitbox != null)
             hitbox.enabled = true;

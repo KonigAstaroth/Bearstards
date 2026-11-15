@@ -32,6 +32,12 @@ public class ShieldPickup : MonoBehaviourPun
 
         used = true;
         health.ActivateShield();
+        PlayerAudio playerAudio = health.GetComponentInChildren<PlayerAudio>(true);
+
+        if (playerAudio != null)
+        {
+            playerAudio.PlayShield();
+        }
 
         photonView.RPC(nameof(DisableShield), RpcTarget.All);
     }

@@ -73,7 +73,7 @@ public class PlayerStateMachine : MonoBehaviour
 
         if (controller == null || animator == null) return;
 
-        if (weaponController == null || upperBodyLayerIndex == null)
+        if (weaponController == null)
             return;
 
         float horizontal = controller.GetHorizontalInput();

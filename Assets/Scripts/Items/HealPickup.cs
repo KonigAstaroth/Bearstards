@@ -35,6 +35,12 @@ public class HealOnCollision : MonoBehaviourPun
 
         used = true;
         health.Heal(healPoints);
+        PlayerAudio playerAudio = health.GetComponentInChildren<PlayerAudio>(true);
+
+        if (playerAudio != null)
+        {
+            playerAudio.PlayPickup();
+        }
 
         photonView.RPC(nameof(DisableHeal), RpcTarget.All);
     }

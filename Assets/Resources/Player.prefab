@@ -2357,6 +2357,8 @@ GameObject:
   - component: {fileID: 3237562304696622571}
   - component: {fileID: -7385552671645107849}
   - component: {fileID: 6209237499032486139}
+  - component: {fileID: 6844814693969816199}
+  - component: {fileID: 386466170419019166}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -2733,6 +2735,139 @@ MonoBehaviour:
   waitingText: {fileID: 8104292255402582019}
   phaseTextUI: {fileID: 3180964117338582705}
   phasePanel: {fileID: 5783462010817085089}
+--- !u!82 &6844814693969816199
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 760855664641151730}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!114 &386466170419019166
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 760855664641151730}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8979a65f7967976179c08f3aec074423, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerAudio
+  audioSource: {fileID: 6844814693969816199}
+  walkSounds:
+  - {fileID: 8300000, guid: 18714bae28b7b83ba8394e3004bcd494, type: 3}
+  runSounds: []
+  walkVolume: 0.3
+  runVolume: 0.6
+  jumpSound: {fileID: 0}
+  landSound: {fileID: 0}
+  damageSounds:
+  - {fileID: 8300000, guid: 0c27671fc14db4faf83e87b0f703de2f, type: 3}
+  deathSound: {fileID: 0}
+  shootSound: {fileID: 0}
+  impactSounds: []
+  pickupHealSound: {fileID: 8300000, guid: f7778882e7e8fbb3799759c1898f7982, type: 3}
+  shieldSound: {fileID: 8300000, guid: daad3dcbdf9cb07099460941c93f75af, type: 3}
+  movementVolume: 0.5
+  combatVolume: 0.8
+  itemVolume: 0.7
+  randomPitch: 1
+  minPitch: 0.9
+  maxPitch: 1.1
+  walkInterval: 0.45
+  runInterval: 0.28
+  enableAudio: 1
 --- !u!1 &1115489475328008900
 GameObject:
   m_ObjectHideFlags: 0
@@ -3272,7 +3407,7 @@ GameObject:
   - component: {fileID: 1526401634108817908}
   m_Layer: 0
   m_Name: Camera
-  m_TagString: Untagged
+  m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
