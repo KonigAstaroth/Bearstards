@@ -23,6 +23,7 @@ public class NeedleMelee : MonoBehaviourPun
     [SerializeField] private float crossFadeDuration = 0.05f;
 
     private int upperBodyLayerIndex = -1;
+    private WeaponController weaponController;
 
     private bool isAttacking;
     private float nextAttackTime;
@@ -34,6 +35,8 @@ public class NeedleMelee : MonoBehaviourPun
     {
         if (playerView == null)
             playerView = GetComponentInParent<PhotonView>();
+
+        weaponController = GetComponentInParent<WeaponController>();
 
         if (hitbox != null)
             hitbox.enabled = false;
@@ -60,6 +63,10 @@ public class NeedleMelee : MonoBehaviourPun
     public void TryAttack()
     {
         if (playerView == null || !playerView.IsMine)
+            return;
+
+        // No atacar si el jugador no tiene la aguja en la mano (guardada con E).
+        if (weaponController != null && !weaponController.CanUseNeedle)
             return;
 
         if (isAttacking || Time.time < nextAttackTime)

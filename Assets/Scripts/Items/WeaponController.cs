@@ -1,5 +1,6 @@
 
 using UnityEngine;
+using UnityEngine.InputSystem;
 using Photon.Pun;
 
 public class WeaponController : MonoBehaviourPun
@@ -30,8 +31,16 @@ public class WeaponController : MonoBehaviourPun
     private int ammunition;
     private WeaponType currentWeapon = WeaponType.None;
 
+    // La aguja se puede guardar/sacar con la tecla E sin perderla.
+    private bool needleHidden;
+
     public bool HasWeapon => currentWeapon == WeaponType.Pistol;
     public bool HasNeedle => currentWeapon == WeaponType.Needle;
+    public bool IsNeedleHidden => needleHidden;
+    public bool CanUseNeedle => currentWeapon == WeaponType.Needle && !needleHidden;
+    // true si el jugador trae algo en la mano (para la capa UpperBody del Animator).
+    public bool IsHoldingWeapon =>
+        currentWeapon == WeaponType.Pistol || CanUseNeedle;
     public WeaponType CurrentWeapon => currentWeapon;
 
     private void Awake()
@@ -50,7 +59,7 @@ public class WeaponController : MonoBehaviourPun
     private void UpdateWeaponModels()
     {
         if (NeedleModel != null)
-            NeedleModel.SetActive(currentWeapon == WeaponType.Needle);
+            NeedleModel.SetActive(CanUseNeedle);
 
         if (WeaponModel != null)
             WeaponModel.SetActive(currentWeapon == WeaponType.Pistol);
@@ -73,6 +82,8 @@ public class WeaponController : MonoBehaviourPun
             return;
 
         currentWeapon = WeaponType.Needle;
+        // Al recoger una aguja siempre aparece en la mano.
+        needleHidden = false;
         UpdateWeaponModels();
     }
 
@@ -80,6 +91,17 @@ public class WeaponController : MonoBehaviourPun
     public void ShowWeapon()
     {
         currentWeapon = WeaponType.Pistol;
+        needleHidden = false;
+        UpdateWeaponModels();
+    }
+
+    [PunRPC]
+    public void SetNeedleHidden(bool hidden)
+    {
+        if (currentWeapon != WeaponType.Needle)
+            return;
+
+        needleHidden = hidden;
         UpdateWeaponModels();
     }
 
@@ -88,13 +110,25 @@ public class WeaponController : MonoBehaviourPun
         if (!photonView.IsMine || MenuPausa.Abierto)
             return;
 
+        // E: guardar / sacar la aguja.
+        if (currentWeapon == WeaponType.Needle &&
+            Keyboard.current != null &&
+            Keyboard.current.eKey.wasPressedThisFrame)
+        {
+            photonView.RPC(
+                nameof(SetNeedleHidden),
+                RpcTarget.All,
+                !needleHidden
+            );
+        }
+
         if (!Input.GetMouseButtonDown(0))
             return;
 
         switch (currentWeapon)
         {
             case WeaponType.Needle:
-                if (needleMelee != null)
+                if (needleMelee != null && !needleHidden)
                     needleMelee.TryAttack();
                 break;
 
