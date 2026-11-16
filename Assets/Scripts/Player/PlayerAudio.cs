@@ -30,6 +30,7 @@ public class PlayerAudio : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float movementVolume = 0.7f;
     [SerializeField, Range(0f, 1f)] private float combatVolume = 0.8f;
     [SerializeField, Range(0f, 1f)] private float itemVolume = 0.7f;
+    [SerializeField, Range(0f, 1f)] private float shootingVolume = 0.5f;
 
     [Header("Pitch Variation")]
     [SerializeField] private bool randomPitch = true;
@@ -118,7 +119,7 @@ public class PlayerAudio : MonoBehaviour
 
     public void PlayShoot()
     {
-        PlaySound(shootSound, combatVolume);
+        PlaySound(shootSound, shootingVolume);
     }
 
     public void PlayImpact()
