@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 using Photon.Pun;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
 
 public class WeaponController : MonoBehaviourPun
 {
@@ -29,10 +30,14 @@ public class WeaponController : MonoBehaviourPun
     [SerializeField] private float aimDistance = 100f;
     [SerializeField] private int pointsPerKill = 400;
     [SerializeField] private int maxAmmunition = 6;
+    [SerializeField] private Light muzzleLight;
 
     [Header ("HUD")]
     [SerializeField] private TMP_Text dartCounter;
     [SerializeField] private Image dartSprite;
+
+    [Header ("SFX")]
+    [SerializeField] private PlayerAudio playerAudio;
 
     private int ammunition;
     private WeaponType currentWeapon = WeaponType.None;
@@ -55,6 +60,8 @@ public class WeaponController : MonoBehaviourPun
 
         if (needleMelee == null)
             needleMelee = GetComponentInChildren<NeedleMelee>(true);
+        
+        muzzleLight.enabled = false;
     }
 
     private void Start()
@@ -175,6 +182,13 @@ public class WeaponController : MonoBehaviourPun
         }
     }
 
+    IEnumerator TriggerMuzzleLight()
+    {
+        muzzleLight.enabled = true;
+        yield return new WaitForSecondsRealtime(0.04f);
+        muzzleLight.enabled = false;
+    }
+
     private void Shoot()
     {
         if (ammunition <=0 || DartPrefab == null ||
@@ -226,6 +240,8 @@ public class WeaponController : MonoBehaviourPun
             }
         );
 
+        if (muzzleLight != null) StartCoroutine(TriggerMuzzleLight());
+
         // Evitar colisiones con el propio jugador.
         Collider[] playerColliders =
             photonView.GetComponentsInChildren<Collider>();
@@ -259,7 +275,7 @@ public class WeaponController : MonoBehaviourPun
                 ForceMode.Impulse
             );
         }
-
+        playerAudio.PlayShoot();
         ammunition--;
         UpdateAmmoHUD();
 
