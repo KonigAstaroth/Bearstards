@@ -78,22 +78,15 @@ public class WeaponController : MonoBehaviourPun
 
         bool showHUD = currentWeapon == WeaponType.Pistol;
 
-        if(dartSprite != null)
+        if (dartCounter != null && dartSprite != null)
         {
-            dartSprite.gameObject.SetActive(true);
-        }
-        if (dartCounter != null)
-        {
-            dartCounter.gameObject.SetActive(true);
-
-            if (showHUD)
-            {
-                dartCounter.text = ammunition.ToString() + "/" + maxAmmunition;
-
-                dartCounter.color = ammunition <=3 ? Color.red : Color.white;
-            }
+            dartCounter.gameObject.SetActive(showHUD);
+            dartSprite.gameObject.SetActive(showHUD);
+            dartCounter.text = ammunition.ToString() + "/" + maxAmmunition;
+            dartCounter.color = ammunition <=3 ? Color.red : Color.white;
             
         }
+
     }
 
     public bool CanPickUpNeedle()
@@ -184,7 +177,7 @@ public class WeaponController : MonoBehaviourPun
 
     private void Shoot()
     {
-        if (ammunition <= 0 || DartPrefab == null ||
+        if (ammunition <=0 || DartPrefab == null ||
             shootPoint == null || playerCamera == null)
             return;
 
@@ -268,15 +261,11 @@ public class WeaponController : MonoBehaviourPun
         }
 
         ammunition--;
+        UpdateAmmoHUD();
 
         if(ammunition <= 0)
         {
             photonView.RPC(nameof(RemovePistol), RpcTarget.All);
-        }
-        else
-        {
-        
-            UpdateAmmoHUD();
         }
     }
 }
