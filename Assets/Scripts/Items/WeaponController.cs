@@ -2,6 +2,8 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Photon.Pun;
+using UnityEngine.UI;
+using TMPro;
 
 public class WeaponController : MonoBehaviourPun
 {
@@ -27,6 +29,10 @@ public class WeaponController : MonoBehaviourPun
     [SerializeField] private float aimDistance = 100f;
     [SerializeField] private int pointsPerKill = 400;
     [SerializeField] private int maxAmmunition = 6;
+
+    [Header ("HUD")]
+    [SerializeField] private TMP_Text dartCounter;
+    [SerializeField] private Image dartSprite;
 
     private int ammunition;
     private WeaponType currentWeapon = WeaponType.None;
@@ -54,6 +60,7 @@ public class WeaponController : MonoBehaviourPun
     private void Start()
     {
         UpdateWeaponModels();
+        UpdateAmmoHUD();
     }
 
     private void UpdateWeaponModels()
@@ -63,6 +70,23 @@ public class WeaponController : MonoBehaviourPun
 
         if (WeaponModel != null)
             WeaponModel.SetActive(currentWeapon == WeaponType.Pistol);
+    }
+
+    private void UpdateAmmoHUD()
+    {
+        if(!photonView.IsMine) return;
+
+        bool showHUD = currentWeapon == WeaponType.Pistol;
+
+        if (dartCounter != null && dartSprite != null)
+        {
+            dartCounter.gameObject.SetActive(showHUD);
+            dartSprite.gameObject.SetActive(showHUD);
+            dartCounter.text = ammunition.ToString() + "/" + maxAmmunition;
+            dartCounter.color = ammunition <=3 ? Color.red : Color.white;
+            
+        }
+
     }
 
     public bool CanPickUpNeedle()
@@ -93,6 +117,19 @@ public class WeaponController : MonoBehaviourPun
         currentWeapon = WeaponType.Pistol;
         needleHidden = false;
         UpdateWeaponModels();
+        UpdateAmmoHUD();
+    }
+
+    [PunRPC]
+    public void RemovePistol()
+    {
+        if (currentWeapon != WeaponType.Pistol) return;
+
+        currentWeapon = WeaponType.None;
+        needleHidden = false;
+
+        UpdateWeaponModels();
+        UpdateAmmoHUD();
     }
 
     [PunRPC]
@@ -140,7 +177,7 @@ public class WeaponController : MonoBehaviourPun
 
     private void Shoot()
     {
-        if (ammunition <= 0 || DartPrefab == null ||
+        if (ammunition <=0 || DartPrefab == null ||
             shootPoint == null || playerCamera == null)
             return;
 
@@ -224,5 +261,11 @@ public class WeaponController : MonoBehaviourPun
         }
 
         ammunition--;
+        UpdateAmmoHUD();
+
+        if(ammunition <= 0)
+        {
+            photonView.RPC(nameof(RemovePistol), RpcTarget.All);
+        }
     }
 }
