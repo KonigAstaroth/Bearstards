@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://littlebearstards.com/contratos/resultado-partida.schema.json",
+  "title": "Resultado de partida",
+  "description": "Cuerpo que el juego (Unity) manda a POST /api/partidas/ al terminar una partida 1v1. Lo reporta uno de los dos jugadores con su token (Authorization: Token <token>). La copia de este archivo en el repo del juego debe ser idéntica.",
+  "type": "object",
+  "required": ["match_id", "jugadores"],
+  "additionalProperties": false,
+  "properties": {
+    "match_id": {
+      "description": "Id único de la partida (por ejemplo, sala de Photon + timestamp). Si se repite, la API responde 409 y no la cuenta dos veces.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "por_abandono": {
+      "description": "true si la partida terminó porque un jugador abandonó. En ese caso exactamente un jugador lleva abandono: true y su resultado es derrota.",
+      "type": "boolean",
+      "default": false
+    },
+    "jugadores": {
+      "description": "Exactamente los dos jugadores de la partida, con ids distintos. Debe haber una victoria y una derrota, o dos empates.",
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": { "$ref": "#/$defs/jugador" }
+    }
+  },
+  "$defs": {
+    "jugador": {
+      "type": "object",
+      "required": ["id", "puntos", "kills", "resultado"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "Id del jugador en la PWA (viene en jugador.id al hacer login).",
+          "type": "integer",
+          "minimum": 1
+        },
+        "puntos": {
+          "description": "Puntos de la partida. Pueden ser 0 o negativos (golpear NPCs resta).",
+          "type": "integer"
+        },
+        "kills": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "resultado": {
+          "enum": ["victoria", "derrota", "empate"]
+        },
+        "abandono": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "match_id": "sala-1-1731000000",
+      "por_abandono": false,
+      "jugadores": [
+        { "id": 1, "puntos": 950, "kills": 4, "resultado": "victoria", "abandono": false },
+        { "id": 2, "puntos": 400, "kills": 2, "resultado": "derrota", "abandono": false }
+      ]
+    }
+  ]
+}

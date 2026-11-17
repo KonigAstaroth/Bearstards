@@ -9,6 +9,8 @@ public class DartProjectile : MonoBehaviourPun, IPunInstantiateMagicCallback
     private int attackerViewID = -1;
     private int pointsPerKill = 0;
 
+    private bool hasImpacted;
+
     public void OnPhotonInstantiate(PhotonMessageInfo info)
     {
         object[] data = photonView.InstantiationData;
@@ -25,11 +27,11 @@ public class DartProjectile : MonoBehaviourPun, IPunInstantiateMagicCallback
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (!photonView.IsMine)
-            return;
+        if (!photonView.IsMine || hasImpacted) return;
 
-        HealthSystem health =
-            collision.gameObject.GetComponentInParent<HealthSystem>();
+        hasImpacted = true;
+
+        HealthSystem health = collision.gameObject.GetComponentInParent<HealthSystem>();
 
         if (health != null)
         {

@@ -7,22 +7,23 @@ using UnityEngine.InputSystem;
 
 public class NeedleMelee : MonoBehaviourPun
 {
-    [Header("Referencias")]
+    [Header("References")]
     [SerializeField] private PhotonView playerView;
     [SerializeField] private Collider hitbox;
 
-    [Header("Combate")]
+    [Header("Combat")]
     [SerializeField] private int damage = 25;
     [SerializeField] private int pointsPerKill = 200;
-    [SerializeField] private float attackDuration = 0.2f;
+    [SerializeField] private float attackDuration = 1f;
     [SerializeField] private float attackCooldown = 0.6f;
 
-    [Header("Animación")]
+    [Header("Animation")]
     [SerializeField] private Animator animator;
     [SerializeField] private string attackStateName = "slash";
     [SerializeField] private float crossFadeDuration = 0.05f;
 
     private int upperBodyLayerIndex = -1;
+    private WeaponController weaponController;
 
     private bool isAttacking;
     private float nextAttackTime;
@@ -34,6 +35,8 @@ public class NeedleMelee : MonoBehaviourPun
     {
         if (playerView == null)
             playerView = GetComponentInParent<PhotonView>();
+
+        weaponController = GetComponentInParent<WeaponController>();
 
         if (hitbox != null)
             hitbox.enabled = false;
@@ -47,7 +50,7 @@ public class NeedleMelee : MonoBehaviourPun
 
     private void Update()
     {
-        if (playerView == null || !playerView.IsMine)
+        if (playerView == null || !playerView.IsMine || MenuPausa.Abierto)
             return;
 
         if (Mouse.current != null &&
@@ -62,25 +65,24 @@ public class NeedleMelee : MonoBehaviourPun
         if (playerView == null || !playerView.IsMine)
             return;
 
+        // No atacar si el jugador no tiene la aguja en la mano (guardada con E).
+        if (weaponController != null && !weaponController.CanUseNeedle)
+            return;
+
         if (isAttacking || Time.time < nextAttackTime)
             return;
 
         if (animator == null)
         {
-            Debug.LogError("NeedleMelee: no hay Animator asignado.");
+            
             return;
         }
 
         if (upperBodyLayerIndex < 0)
         {
-            Debug.LogError("NeedleMelee: no se encontró la capa UpperBody.");
+            
             return;
         }
-
-        Debug.Log(
-            $"Ataque iniciado. Estado: {attackStateName}, " +
-            $"Capa: {upperBodyLayerIndex}"
-        );
 
         animator.Play("slash", upperBodyLayerIndex, 0f);
 
@@ -93,8 +95,11 @@ public class NeedleMelee : MonoBehaviourPun
         nextAttackTime = Time.time + attackCooldown;
         hitPlayers.Clear();
 
+
         if (hitbox != null)
             hitbox.enabled = true;
+
+        Debug.Log("HITBOX ENABLED: " + hitbox.enabled);
 
         yield return new WaitForSeconds(attackDuration);
 
@@ -109,7 +114,13 @@ public class NeedleMelee : MonoBehaviourPun
         if (!isAttacking || playerView == null || !playerView.IsMine)
             return;
 
-        PhotonView targetView = other.GetComponentInParent<PhotonView>();
+        HealthSystem health =
+            other.GetComponentInParent<HealthSystem>();
+
+        if (health == null)
+            return;
+
+        PhotonView targetView = health.photonView;
 
         if (targetView == null || targetView == playerView)
             return;
@@ -117,17 +128,14 @@ public class NeedleMelee : MonoBehaviourPun
         if (!hitPlayers.Add(targetView.ViewID))
             return;
 
-        HealthSystem health =
-            targetView.GetComponentInChildren<HealthSystem>();
+        Debug.Log("AGUJA: aplicando " + damage + " de daÃ±o a " + targetView.Owner.NickName);
 
-        if (health == null)
-            return;
-
-        // El daño se procesa en el cliente propietario de la víctima.
         health.photonView.RPC(
             nameof(HealthSystem.TakeDamage),
             health.photonView.Owner,
-            damage
+            damage,
+            playerView.ViewID,
+            pointsPerKill
         );
     }
 
@@ -138,4 +146,21 @@ public class NeedleMelee : MonoBehaviourPun
 
         isAttacking = false;
     }
+
+
+    // Temporal
+    private void OnDrawGizmos()
+    {
+        if (hitbox == null)
+            return;
+
+        Gizmos.color = hitbox.enabled ? Color.green : Color.red;
+
+        if (hitbox is BoxCollider box)
+        {
+            Gizmos.matrix = box.transform.localToWorldMatrix;
+            Gizmos.DrawWireCube(box.center, box.size);
+        }
+    }
+
 }

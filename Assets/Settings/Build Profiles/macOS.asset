@@ -17,14 +17,11 @@ MonoBehaviour:
   m_Subtarget: 2
   m_PlatformId: 0d2129357eac403d8b359c2dcbf82502
   m_PlatformBuildProfile:
-    rid: 2081412222132420608
+    rid: 5060045046543810561
   m_ActivePlatformGuid: 
   m_AdditionalPlatformBuildSettings: []
   m_OverrideGlobalSceneList: 0
-  m_Scenes:
-  - m_enabled: 1
-    m_path: Assets/Scenes/Loading.unity
-    m_guid: 99c9720ab356a0642a771bea13969a05
+  m_Scenes: []
   m_HasScriptingDefines: 0
   m_ScriptingDefines: []
   m_PlayerSettingsYaml:
@@ -33,7 +30,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2081412222132420608
+    - rid: 5060045046543810561
       type: {class: OSXStandaloneBuildProfile, ns: UnityEditor.OSXStandalone, asm: UnityEditor.OSXStandalone.Extensions}
       data:
         m_Development: 0

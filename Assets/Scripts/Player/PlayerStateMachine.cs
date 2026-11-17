@@ -73,7 +73,7 @@ public class PlayerStateMachine : MonoBehaviour
 
         if (controller == null || animator == null) return;
 
-        if (weaponController == null || upperBodyLayerIndex == null)
+        if (weaponController == null)
             return;
 
         float horizontal = controller.GetHorizontalInput();
@@ -102,7 +102,7 @@ public class PlayerStateMachine : MonoBehaviour
         {
             animator.SetLayerWeight(
                 upperBodyLayerIndex,
-                weaponController.CurrentWeapon != WeaponController.WeaponType.None
+                weaponController.IsHoldingWeapon
                     ? 1f
                     : 0f
             );
@@ -111,6 +111,7 @@ public class PlayerStateMachine : MonoBehaviour
         // Solo se permite iniciar un salto desde Grounded.
         if (CurrentState == PlayerState.Grounded
             && !jumpRoutineRunning
+            && !MenuPausa.Abierto
             && Keyboard.current != null
             && Keyboard.current.spaceKey.wasPressedThisFrame
             && controller.IsGrounded())
