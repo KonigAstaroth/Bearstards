@@ -2,6 +2,9 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Photon.Pun;
+using UnityEngine.UI;
+using TMPro;
+using System.Collections;
 
 public class WeaponController : MonoBehaviourPun
 {
@@ -27,6 +30,14 @@ public class WeaponController : MonoBehaviourPun
     [SerializeField] private float aimDistance = 100f;
     [SerializeField] private int pointsPerKill = 400;
     [SerializeField] private int maxAmmunition = 6;
+    [SerializeField] private Light muzzleLight;
+
+    [Header ("HUD")]
+    [SerializeField] private TMP_Text dartCounter;
+    [SerializeField] private Image dartSprite;
+
+    [Header ("SFX")]
+    [SerializeField] private PlayerAudio playerAudio;
 
     private int ammunition;
     private WeaponType currentWeapon = WeaponType.None;
@@ -49,11 +60,14 @@ public class WeaponController : MonoBehaviourPun
 
         if (needleMelee == null)
             needleMelee = GetComponentInChildren<NeedleMelee>(true);
+        
+        muzzleLight.enabled = false;
     }
 
     private void Start()
     {
         UpdateWeaponModels();
+        UpdateAmmoHUD();
     }
 
     private void UpdateWeaponModels()
@@ -63,6 +77,23 @@ public class WeaponController : MonoBehaviourPun
 
         if (WeaponModel != null)
             WeaponModel.SetActive(currentWeapon == WeaponType.Pistol);
+    }
+
+    private void UpdateAmmoHUD()
+    {
+        if(!photonView.IsMine) return;
+
+        bool showHUD = currentWeapon == WeaponType.Pistol;
+
+        if (dartCounter != null && dartSprite != null)
+        {
+            dartCounter.gameObject.SetActive(showHUD);
+            dartSprite.gameObject.SetActive(showHUD);
+            dartCounter.text = ammunition.ToString() + "/" + maxAmmunition;
+            dartCounter.color = ammunition <=3 ? Color.red : Color.white;
+            
+        }
+
     }
 
     public bool CanPickUpNeedle()
@@ -93,6 +124,19 @@ public class WeaponController : MonoBehaviourPun
         currentWeapon = WeaponType.Pistol;
         needleHidden = false;
         UpdateWeaponModels();
+        UpdateAmmoHUD();
+    }
+
+    [PunRPC]
+    public void RemovePistol()
+    {
+        if (currentWeapon != WeaponType.Pistol) return;
+
+        currentWeapon = WeaponType.None;
+        needleHidden = false;
+
+        UpdateWeaponModels();
+        UpdateAmmoHUD();
     }
 
     [PunRPC]
@@ -138,9 +182,16 @@ public class WeaponController : MonoBehaviourPun
         }
     }
 
+    IEnumerator TriggerMuzzleLight()
+    {
+        muzzleLight.enabled = true;
+        yield return new WaitForSecondsRealtime(0.04f);
+        muzzleLight.enabled = false;
+    }
+
     private void Shoot()
     {
-        if (ammunition <= 0 || DartPrefab == null ||
+        if (ammunition <=0 || DartPrefab == null ||
             shootPoint == null || playerCamera == null)
             return;
 
@@ -189,6 +240,8 @@ public class WeaponController : MonoBehaviourPun
             }
         );
 
+        if (muzzleLight != null) StartCoroutine(TriggerMuzzleLight());
+
         // Evitar colisiones con el propio jugador.
         Collider[] playerColliders =
             photonView.GetComponentsInChildren<Collider>();
@@ -222,7 +275,13 @@ public class WeaponController : MonoBehaviourPun
                 ForceMode.Impulse
             );
         }
-
+        playerAudio.PlayShoot();
         ammunition--;
+        UpdateAmmoHUD();
+
+        if(ammunition <= 0)
+        {
+            photonView.RPC(nameof(RemovePistol), RpcTarget.All);
+        }
     }
 }
