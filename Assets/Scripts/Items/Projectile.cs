@@ -31,6 +31,20 @@ public class DartProjectile : MonoBehaviourPun, IPunInstantiateMagicCallback
 
         hasImpacted = true;
 
+        OilBarrel barrel = collision.collider.GetComponentInParent<OilBarrel>();
+
+        if (barrel != null)
+        {
+            barrel.photonView.RPC(
+                nameof(OilBarrel.RegisterHit),
+                RpcTarget.MasterClient
+            );
+
+            PhotonNetwork.Destroy(gameObject);
+            
+            return;
+        }
+
         HealthSystem health = collision.gameObject.GetComponentInParent<HealthSystem>();
 
         if (health != null)

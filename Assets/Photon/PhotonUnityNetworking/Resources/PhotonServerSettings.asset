@@ -53,6 +53,9 @@ MonoBehaviour:
   - AwardPlayerKill
   - SetNeedleHidden
   - RemovePistol
+  - Explode
+  - RegisterHit
+  - StartPreExplosion
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

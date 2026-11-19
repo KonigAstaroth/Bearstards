@@ -52,6 +52,10 @@ public class HealthSystem : MonoBehaviourPun
     [PunRPC]
     public void TakeDamage(int damage, int attackerViewID, int pointsPerKill)
     {
+        Debug.Log(
+        $"TAKE DAMAGE RPC | IsMine: {photonView.IsMine} | " +
+        $"Damage: {damage} | Health: {currentHealth}"
+        );
         if (!photonView.IsMine || isDead || damage <= 0)
             return;
 
