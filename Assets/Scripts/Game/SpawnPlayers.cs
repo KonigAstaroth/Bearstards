@@ -13,6 +13,8 @@ public class SpawnPlayers : MonoBehaviour
     public float areaLength = 5f;
     public float playerRadius = 0.4f;
     public LayerMask obstacleLayer;
+    [Tooltip("Altura libre que necesita el jugador al aparecer.")]
+    public float spawnCheckHeight = 1.6f;
     public int maxAttempts = 20;
 
     [Header("Respawn")]
@@ -96,10 +98,18 @@ public class SpawnPlayers : MonoBehaviour
                 Random.Range(-areaLength / 2f, areaLength / 2f)
             );
 
-            bool occupied = Physics.CheckSphere(
-                randomPosition,
+            // Cápsula del tamaño del jugador que empieza justo arriba del piso:
+            // detecta juguetes bajos sin chocar con el propio piso.
+            float groundY = transform.position.y;
+            Vector3 bottom = new Vector3(randomPosition.x, groundY + 0.05f + playerRadius, randomPosition.z);
+            Vector3 top = new Vector3(randomPosition.x, groundY + spawnCheckHeight - playerRadius, randomPosition.z);
+
+            bool occupied = Physics.CheckCapsule(
+                bottom,
+                top,
                 playerRadius,
-                obstacleLayer
+                obstacleLayer,
+                QueryTriggerInteraction.Ignore
             );
 
             if (occupied)

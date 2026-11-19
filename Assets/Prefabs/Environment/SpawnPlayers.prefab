@@ -50,5 +50,5 @@ MonoBehaviour:
   playerRadius: 0.4
   obstacleLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 65
   maxAttempts: 20
