@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 2705450944711621698}
   - component: {fileID: 6839072620842847893}
   - component: {fileID: 3929909396825901241}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Barrel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -225,7 +225,7 @@ GameObject:
   - component: {fileID: 7916892891075299606}
   - component: {fileID: 4160778319391927052}
   - component: {fileID: 3089960634507186656}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: PreExplosionLight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -352,7 +352,7 @@ GameObject:
   - component: {fileID: 4214687773887848525}
   - component: {fileID: 4064519663011640501}
   - component: {fileID: 2228417075627958302}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Debris
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2690,7 +2690,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2779562643345537262}
   - component: {fileID: 785779745829660193}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: ExplosionTrigger
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2744,7 +2744,7 @@ GameObject:
   - component: {fileID: 6564820226720184026}
   - component: {fileID: 2971901322073533071}
   - component: {fileID: 4452884459258634711}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: ExplosionLight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2871,7 +2871,7 @@ GameObject:
   - component: {fileID: 8391058357116924254}
   - component: {fileID: 5589045097977770314}
   - component: {fileID: 9132701845301480824}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Explosion
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5242,6 +5242,10 @@ PrefabInstance:
       value: oil_barrel_asset
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: f33cbe4f75ee1d1409d437cf1f7c5343, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: f33cbe4f75ee1d1409d437cf1f7c5343, type: 3}
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
@@ -5351,6 +5355,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 5fb4006b6478e1697a990dd1dddfc59a, type: 3}
       propertyPath: m_Name
       value: destroyed_oil_barrel_asset
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 5fb4006b6478e1697a990dd1dddfc59a, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 5fb4006b6478e1697a990dd1dddfc59a, type: 3}
       propertyPath: m_IsActive
