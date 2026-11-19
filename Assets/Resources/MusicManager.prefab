@@ -158,5 +158,9 @@ MonoBehaviour:
   - {fileID: 8300000, guid: a3b6e188a295c415091a43635fc0d418, type: 3}
   - {fileID: 8300000, guid: d50e17af03377c9c9b7786a5522fba3b, type: 3}
   - {fileID: 8300000, guid: 50f9da6c31a2104359249cd2357af11c, type: 3}
+  victoryTrack: {fileID: 8300000, guid: 2602152f512cf89958ae19d1acb4f81a, type: 3}
+  defeatTrack: {fileID: 8300000, guid: c1fdb1f8479eefc9081a4912d38e3e3a, type: 3}
+  tieTrack: {fileID: 0}
   volume: 0.5
   fadeDuration: 1.5
+  resultFadeDuration: 0.3

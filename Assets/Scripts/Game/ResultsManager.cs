@@ -1,4 +1,3 @@
-
 using Photon.Pun;
 using TMPro;
 using UnityEngine;
@@ -83,6 +82,7 @@ public class ResultsManager : MonoBehaviourPunCallbacks
             resultText.color = Color.green;
             Animar(localBearController, "TIE");
             Animar(enemyBearController, "TIE");
+            MusicManager.Request(MusicMode.Tie);
         }
         else if (winnerActorNumber == myActorNumber)
         {
@@ -90,6 +90,7 @@ public class ResultsManager : MonoBehaviourPunCallbacks
             resultText.color = HexToColor("#FFA400");
             Animar(localBearController, "Victory");
             Animar(enemyBearController, "Defeat");
+            MusicManager.Request(MusicMode.Victory);
         }
         else
         {
@@ -99,6 +100,7 @@ public class ResultsManager : MonoBehaviourPunCallbacks
             resultText.color = Color.red;
             Animar(localBearController, "Defeat");
             Animar(enemyBearController, "Victory");
+            MusicManager.Request(MusicMode.Defeat);
         }
 
         resultDisplayed = true;
