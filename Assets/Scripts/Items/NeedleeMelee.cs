@@ -30,6 +30,7 @@ public class NeedleMelee : MonoBehaviourPun
 
     // Evita golpear varias veces al mismo jugador durante un ataque.
     private readonly HashSet<int> hitPlayers = new HashSet<int>();
+    private readonly HashSet<int> hitBarrels = new();
 
     private void Awake()
     {
@@ -94,6 +95,7 @@ public class NeedleMelee : MonoBehaviourPun
         isAttacking = true;
         nextAttackTime = Time.time + attackCooldown;
         hitPlayers.Clear();
+        hitBarrels.Clear();
 
 
         if (hitbox != null)
@@ -111,14 +113,25 @@ public class NeedleMelee : MonoBehaviourPun
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!isAttacking || playerView == null || !playerView.IsMine)
-            return;
+        if (!isAttacking || playerView == null || !playerView.IsMine) return;
 
-        HealthSystem health =
-            other.GetComponentInParent<HealthSystem>();
+        OilBarrel barrel = other.GetComponentInParent<OilBarrel>();
 
-        if (health == null)
+        if (barrel != null)
+        {
+            if (!hitBarrels.Add(barrel.photonView.ViewID)) return;
+            
+            barrel.photonView.RPC(
+                nameof(OilBarrel.RegisterHit),
+                RpcTarget.MasterClient
+            );
+
             return;
+        }
+
+        HealthSystem health = other.GetComponentInParent<HealthSystem>();
+
+        if (health == null) return;
 
         PhotonView targetView = health.photonView;
 
