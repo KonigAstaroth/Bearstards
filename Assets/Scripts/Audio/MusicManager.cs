@@ -5,15 +5,18 @@ public enum MusicMode
 {
     None,
     Lobby,
-    Game
+    Game,
+    Victory,
+    Defeat,
+    Tie
 }
 
 /// <summary>
 /// Reproduce la música del juego. Persiste entre escenas (DontDestroyOnLoad).
-/// - Modo Lobby: pistas de la lista "Lobby Tracks".
-/// - Modo Game: pistas de la lista "Game Tracks", en orden aleatorio sin repetir la anterior.
+/// - Lobby y Game: listas de pistas en orden aleatorio, sin repetir la anterior, que pasan solas a la siguiente.
+/// - Victory, Defeat y Tie: una sola pista que suena UNA vez; al terminar, el gestor pasa a la música de Lobby.
+///   Si una pista de resultado no está asignada, pasa directo a la música de Lobby.
 /// - Cambia de modo con un fundido de salida y de entrada.
-/// - Al terminar una pista, pasa sola a la siguiente (si la lista tiene una sola, se repite).
 /// La música es local: no usa Photon, cada jugador oye la suya.
 /// </summary>
 [RequireComponent(typeof(AudioSource))]
@@ -21,15 +24,22 @@ public class MusicManager : MonoBehaviour
 {
     public static MusicManager Instance { get; private set; }
 
-    [Header("Pistas")]
+    [Header("Pistas de lobby y partida")]
     [SerializeField] private AudioClip[] lobbyTracks;
     [SerializeField] private AudioClip[] gameTracks;
+
+    [Header("Pistas de resultado (suenan una sola vez)")]
+    [SerializeField] private AudioClip victoryTrack;
+    [SerializeField] private AudioClip defeatTrack;
+    [SerializeField] private AudioClip tieTrack;
 
     [Header("Volumen")]
     [Range(0f, 1f)]
     [SerializeField] private float volume = 0.5f;
     [Tooltip("Segundos del fundido al cambiar de modo. 0 = cambio inmediato.")]
     [SerializeField] private float fadeDuration = 1.5f;
+    [Tooltip("Fundido de entrada de las pistas de resultado (más corto para que no se coma el inicio).")]
+    [SerializeField] private float resultFadeDuration = 0.3f;
 
     private const string VolumeKey = "MusicVolume";
 
@@ -65,9 +75,36 @@ public class MusicManager : MonoBehaviour
     {
         if (transition != null || currentMode == MusicMode.None) return;
 
-        // La pista terminó: elige la siguiente
+        // La pista terminó
         if (!source.isPlaying && source.time <= 0f)
-            PlayNextTrack();
+        {
+            if (IsResultMode(currentMode))
+                Play(MusicMode.Lobby);   // tras el resultado, vuelve la música del lobby
+            else
+                PlayNextTrack();
+        }
+    }
+
+    /// <summary>
+    /// Cambia el modo de música desde cualquier script. Si el MusicManager todavía no existe
+    /// (por ejemplo, al abrir una escena directamente), lo crea desde el prefab de Resources.
+    /// </summary>
+    public static void Request(MusicMode mode)
+    {
+        if (Instance == null)
+        {
+            MusicManager prefab = Resources.Load<MusicManager>("MusicManager");
+
+            if (prefab == null)
+            {
+                Debug.LogWarning("MusicManager: no se encontró el prefab 'MusicManager' en una carpeta Resources.");
+                return;
+            }
+
+            Instantiate(prefab);
+        }
+
+        Instance.Play(mode);
     }
 
     /// <summary>Cambia el modo de música. Si ya está en ese modo, no hace nada.</summary>
@@ -99,11 +136,16 @@ public class MusicManager : MonoBehaviour
             source.volume = volume;
     }
 
+    private static bool IsResultMode(MusicMode mode)
+    {
+        return mode == MusicMode.Victory || mode == MusicMode.Defeat || mode == MusicMode.Tie;
+    }
+
     private IEnumerator SwitchTo(MusicMode mode)
     {
         // Baja el volumen de lo que esté sonando
         if (source.isPlaying)
-            yield return Fade(source.volume, 0f);
+            yield return Fade(source.volume, 0f, fadeDuration);
 
         source.Stop();
 
@@ -120,14 +162,15 @@ public class MusicManager : MonoBehaviour
         source.volume = 0f;
         source.Play();
 
-        yield return Fade(0f, volume);
+        float fadeIn = IsResultMode(mode) ? resultFadeDuration : fadeDuration;
+        yield return Fade(0f, volume, fadeIn);
 
         transition = null;
     }
 
-    private IEnumerator Fade(float from, float to)
+    private IEnumerator Fade(float from, float to, float duration)
     {
-        if (fadeDuration <= 0f)
+        if (duration <= 0f)
         {
             source.volume = to;
             yield break;
@@ -135,10 +178,10 @@ public class MusicManager : MonoBehaviour
 
         float elapsed = 0f;
 
-        while (elapsed < fadeDuration)
+        while (elapsed < duration)
         {
             elapsed += Time.unscaledDeltaTime;
-            source.volume = Mathf.Lerp(from, to, elapsed / fadeDuration);
+            source.volume = Mathf.Lerp(from, to, elapsed / duration);
             yield return null;
         }
 
@@ -159,6 +202,13 @@ public class MusicManager : MonoBehaviour
 
     private AudioClip PickClip(MusicMode mode)
     {
+        switch (mode)
+        {
+            case MusicMode.Victory: return victoryTrack;
+            case MusicMode.Defeat: return defeatTrack;
+            case MusicMode.Tie: return tieTrack;
+        }
+
         AudioClip[] list = null;
 
         if (mode == MusicMode.Lobby) list = lobbyTracks;
