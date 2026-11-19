@@ -1545,6 +1545,10 @@ PrefabInstance:
       propertyPath: m_RenderMode
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1405563606842972038, guid: 55d5db4e3a2b10c4c9bfc6d17ad1152e, type: 3}
+      propertyPath: m_Antialiasing
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3505948186641969278, guid: 55d5db4e3a2b10c4c9bfc6d17ad1152e, type: 3}
       propertyPath: m_LocalPosition.x
       value: -23
@@ -1588,6 +1592,10 @@ PrefabInstance:
     - target: {fileID: 3907688527396072246, guid: 55d5db4e3a2b10c4c9bfc6d17ad1152e, type: 3}
       propertyPath: m_Name
       value: RespawnCamera
+      objectReference: {fileID: 0}
+    - target: {fileID: 4808985645080199895, guid: 55d5db4e3a2b10c4c9bfc6d17ad1152e, type: 3}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5141805311564925050, guid: 55d5db4e3a2b10c4c9bfc6d17ad1152e, type: 3}
       propertyPath: m_Pivot.x
