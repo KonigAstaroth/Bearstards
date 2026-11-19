@@ -3931,7 +3931,7 @@ MonoBehaviour:
   vSyncToggle: {fileID: 2012152768}
   settingsPanel: {fileID: 492165569}
   backgroundPanel: {fileID: 1025482100}
-  screenMode: 3
+  screenMode: 0
 --- !u!4 &1025322666
 Transform:
   m_ObjectHideFlags: 0
