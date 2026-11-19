@@ -85,9 +85,20 @@ public class NeedleMelee : MonoBehaviourPun
             return;
         }
 
-        animator.Play("slash", upperBodyLayerIndex, 0f);
+        PlaySlashAnimation();
+
+        // animator.Play no lo sincroniza PhotonAnimatorView: avisar a los demás.
+        playerView.RPC(nameof(WeaponController.PlayNeedleSlash), RpcTarget.Others);
 
         StartCoroutine(AttackRoutine());
+    }
+
+    public void PlaySlashAnimation()
+    {
+        if (animator == null || upperBodyLayerIndex < 0)
+            return;
+
+        animator.Play(attackStateName, upperBodyLayerIndex, 0f);
     }
 
     private IEnumerator AttackRoutine()

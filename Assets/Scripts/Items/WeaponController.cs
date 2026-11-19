@@ -139,6 +139,15 @@ public class WeaponController : MonoBehaviourPun
         UpdateAmmoHUD();
     }
 
+    // Reproduce el golpe de la aguja en las copias remotas de este jugador.
+    // Vive aquí porque PUN solo busca RPCs en el GameObject del PhotonView.
+    [PunRPC]
+    public void PlayNeedleSlash()
+    {
+        if (needleMelee != null)
+            needleMelee.PlaySlashAnimation();
+    }
+
     [PunRPC]
     public void SetNeedleHidden(bool hidden)
     {
