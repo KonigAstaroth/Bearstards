@@ -18,6 +18,7 @@ public class GraphicsSettings : MonoBehaviour
     [SerializeField] private FullScreenMode screenMode = FullScreenMode.Windowed;
 
     private Resolution[] resolutions;
+    private readonly List<Resolution> dropdownResolutions = new List<Resolution>();
 
     private const string ResolutionWidthKey = "ResolutionWidth";
     private const string ResolutionHeightKey = "ResolutionHeight";
@@ -67,6 +68,8 @@ public class GraphicsSettings : MonoBehaviour
         {
             resolutionDropdown.ClearOptions();
 
+            dropdownResolutions.Clear();
+
             List<string> options = new List<string>();
 
             int savedWidth = PlayerPrefs.GetInt(
@@ -81,23 +84,23 @@ public class GraphicsSettings : MonoBehaviour
             {
                 Resolution resolution = resolutions[i];
 
-                string option = resolution.width + " x " +
-                                resolution.height;
+                bool existe = dropdownResolutions.Exists(r =>
+                    r.width == resolution.width &&
+                    r.height == resolution.height);
 
-                if (!options.Contains(option))
-                    options.Add(option);
+                if (existe)
+                    continue;
+
+                dropdownResolutions.Add(resolution);
+
+                options.Add(resolution.width + " x " +
+                            resolution.height);
 
                 if (resolution.width == savedWidth &&
                     resolution.height == savedHeight)
                 {
-                    selectedResolutionIndex = options.Count - 1;
+                    selectedResolutionIndex = dropdownResolutions.Count - 1;
                 }
-            }
-
-            if (options.Count == 0)
-            {
-                options.Add(Screen.width + " x " + Screen.height);
-                selectedResolutionIndex = 0;
             }
 
             resolutionDropdown.AddOptions(options);
@@ -166,27 +169,27 @@ public class GraphicsSettings : MonoBehaviour
 
     private void ApplySettings()
     {
+        // RESOLUTION: APPLY IN ALL SCENES
+        int width = PlayerPrefs.GetInt(
+            ResolutionWidthKey, Screen.width);
+
+        int height = PlayerPrefs.GetInt(
+            ResolutionHeightKey, Screen.height);
+
+        if (width > 0 && height > 0 &&
+            (Screen.width != width || Screen.height != height))
+        {
+            Screen.SetResolution(width, height, screenMode);
+
+            Debug.Log($"Applying resolution: {width}x{height}");
+        }
+
         // MENUS: ALWAYS 60 FPS
         if (IsMenuScene())
         {
             QualitySettings.vSyncCount = 0;
             Application.targetFrameRate = 60;
             return;
-        }
-
-        // RESOLUTION
-        if (resolutions.Length > 0)
-        {
-            int width = PlayerPrefs.GetInt(
-                ResolutionWidthKey, Screen.width);
-
-            int height = PlayerPrefs.GetInt(
-                ResolutionHeightKey, Screen.height);
-
-            if (Screen.width != width || Screen.height != height)
-            {
-                Screen.SetResolution(width, height, screenMode);
-            }
         }
 
         // FPS AND VSYNC
@@ -228,12 +231,14 @@ public class GraphicsSettings : MonoBehaviour
     public void CloseSettings()
     {
         // SAVE SELECTED RESOLUTION
-        if (resolutions.Length > 0)
+        if (dropdownResolutions.Count > 0)
         {
             int index = Mathf.Clamp(
-                selectedResolutionIndex, 0, resolutions.Length - 1);
+                selectedResolutionIndex,
+                0,
+                dropdownResolutions.Count - 1);
 
-            Resolution resolution = resolutions[index];
+            Resolution resolution = dropdownResolutions[index];
 
             PlayerPrefs.SetInt(ResolutionWidthKey, resolution.width);
             PlayerPrefs.SetInt(ResolutionHeightKey, resolution.height);
