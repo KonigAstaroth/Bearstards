@@ -11,7 +11,7 @@ public class MatchManager : MonoBehaviourPunCallbacks
 {
     public static MatchManager Instance { get; private set; }
 
-    private const double MatchDuration = 190.0;
+    private const double MatchDuration = 600.0;
 
     private const string StartTimeKey = EstadoPartida.ClaveInicio;
     private const string EndedKey = EstadoPartida.ClaveTerminada;

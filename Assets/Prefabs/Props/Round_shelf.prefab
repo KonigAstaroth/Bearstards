@@ -84,13 +84,47 @@ PrefabInstance:
       propertyPath: m_Name
       value: circle_shaped_shelf_asset
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 24a0a3ba5c87d5cb8ad3dfb033f3ccd1, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 24a0a3ba5c87d5cb8ad3dfb033f3ccd1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1174933144672089022}
   m_SourcePrefab: {fileID: 100100000, guid: 24a0a3ba5c87d5cb8ad3dfb033f3ccd1, type: 3}
 --- !u!4 &4887428396129430142 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 24a0a3ba5c87d5cb8ad3dfb033f3ccd1, type: 3}
   m_PrefabInstance: {fileID: 4924997655887531413}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &5231056963592515780 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 24a0a3ba5c87d5cb8ad3dfb033f3ccd1, type: 3}
+  m_PrefabInstance: {fileID: 4924997655887531413}
+  m_PrefabAsset: {fileID: 0}
+--- !u!64 &1174933144672089022
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5231056963592515780}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -2124705421725058983, guid: 24a0a3ba5c87d5cb8ad3dfb033f3ccd1, type: 3}
