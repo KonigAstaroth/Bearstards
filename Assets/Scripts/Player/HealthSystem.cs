@@ -1,6 +1,8 @@
 using UnityEngine;
 using Photon.Pun;
 using UnityEngine.UI;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 public class HealthSystem : MonoBehaviourPun
 {
@@ -19,6 +21,16 @@ public class HealthSystem : MonoBehaviourPun
     [Tooltip("Puntos que pierde el jugador que mata a este NPC.")]
     [SerializeField] private int npcKillPenalty = 100;
 
+    [Header ("SFX")]
+    [SerializeField] private PlayerAudio playerAudio;
+
+    [Header("Low Health")]
+    [SerializeField] private GameObject lowHealthOverlay;
+    [SerializeField] private int lowHealthThreshold = 25;
+
+    private ColorAdjustments colorAdjustments;
+
+
     /// <summary>Se dispara al morir cuando isNpc está activo.</summary>
     public event System.Action Died;
 
@@ -34,6 +46,8 @@ public class HealthSystem : MonoBehaviourPun
 
         if (helmetModel != null)
             helmetModel.SetActive(false);
+
+        if(lowHealthOverlay != null) lowHealthOverlay.SetActive(false);
     }
 
     private void Start()
@@ -45,19 +59,28 @@ public class HealthSystem : MonoBehaviourPun
 
             return;
         }
+        Volume volume = FindAnyObjectByType<Volume>();
 
+        if (volume != null && volume.profile != null)
+        {
+            VolumeProfile profile = Instantiate(volume.profile);
+            volume.profile = profile;
+
+            if (profile.TryGet(out ColorAdjustments adjustments))
+            {
+                colorAdjustments = adjustments;
+            }
+        }
         UpdateHealth();
     }
 
     [PunRPC]
     public void TakeDamage(int damage, int attackerViewID, int pointsPerKill)
     {
-        Debug.Log(
-        $"TAKE DAMAGE RPC | IsMine: {photonView.IsMine} | " +
-        $"Damage: {damage} | Health: {currentHealth}"
-        );
         if (!photonView.IsMine || isDead || damage <= 0)
             return;
+
+        playerAudio.PlayImpact();
 
         int absorbedDamage = Mathf.Min(currentShield, damage);
 
@@ -90,6 +113,16 @@ public class HealthSystem : MonoBehaviourPun
         {
             healthBar.fillAmount =
                 Mathf.Clamp01((float)currentHealth / maxHealth);
+        }
+
+        if (lowHealthOverlay != null)
+        {
+            lowHealthOverlay.SetActive(currentHealth <= lowHealthThreshold && currentHealth > 0);
+        }
+
+        if (colorAdjustments != null)
+        {
+            colorAdjustments.saturation.value = currentHealth <= lowHealthThreshold && currentHealth > 0 ? -100f : 0;
         }
     }
 

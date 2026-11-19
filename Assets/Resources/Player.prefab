@@ -2711,6 +2711,8 @@ MonoBehaviour:
   helmetModel: {fileID: 5641254616868959770}
   isNpc: 0
   npcKillPenalty: 100
+  playerAudio: {fileID: 386466170419019166}
+  lowHealthOverlay: {fileID: 1764511840029939797}
 --- !u!114 &2897531587722198831
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3062,7 +3064,8 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 0c27671fc14db4faf83e87b0f703de2f, type: 3}
   deathSound: {fileID: 0}
   shootSound: {fileID: 8300000, guid: 5c137cf7c769b12469b21db29a82e4af, type: 3}
-  impactSounds: []
+  impactSounds:
+  - {fileID: 8300000, guid: e46c5195379756185bdb82366406bbda, type: 3}
   pickupHealSound: {fileID: 8300000, guid: f7778882e7e8fbb3799759c1898f7982, type: 3}
   shieldSound: {fileID: 8300000, guid: daad3dcbdf9cb07099460941c93f75af, type: 3}
   movementVolume: 0.6
@@ -3426,6 +3429,81 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1 &1764511840029939797
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7526439833931818915}
+  - component: {fileID: 768042430129288629}
+  - component: {fileID: 3314927927451918655}
+  m_Layer: 5
+  m_Name: LowHealthOverlay
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &7526439833931818915
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1764511840029939797}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4238858134069806461}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -7.6397555e-11, y: 0}
+  m_SizeDelta: {x: 0, y: 0.00012207}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &768042430129288629
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1764511840029939797}
+  m_CullTransparentMesh: 1
+--- !u!114 &3314927927451918655
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1764511840029939797}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 2064987153365718621, guid: d9cf51efa1941a539b6e6e77dd576074, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &1972891561183106600
 GameObject:
   m_ObjectHideFlags: 0
@@ -3489,6 +3567,7 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 7526439833931818915}
   - {fileID: 5944214497719595680}
   - {fileID: 3481624584850766941}
   - {fileID: 3238790631126237522}
