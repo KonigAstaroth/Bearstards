@@ -62,7 +62,7 @@ El juego cuenta con una versión ejecutable para **Windows**. No es necesario in
 | `S` | Moverse hacia atrás |
 | `D` | Moverse hacia la derecha |
 | `SPACE` | Saltar |
-| `SHIFT` | Correr |
+| `SHIFT IZQUIERDO` | Correr |
 | `E` | Ocultar la aguja de coser |
 | `CLICK IZQUIERDO` | Atacar |
 | `ESC` | Abrir el menú de pausa |
