@@ -15,6 +15,11 @@ public class ThirdPersonController : MonoBehaviour
     public float cameraHeight = 1.3f;
     [SerializeField] private float cameraSideOffset = 0.8f;
 
+    [Header("Camera Collision")]
+    [SerializeField] private float cameraCollisionRadius = 0.2f;
+    [SerializeField] private float cameraCollisionOffset = 0.1f;
+    [SerializeField] private LayerMask cameraCollisionLayers = ~0;
+
     [Header("Sprint Camera")]
     [SerializeField] private float sprintCameraDistance = 2f;
     [SerializeField] private float cameraTransitionSpeed = 4f;
@@ -247,10 +252,44 @@ public class ThirdPersonController : MonoBehaviour
         Vector3 focusPoint =
             transform.position + Vector3.up * cameraHeight;
 
-        cam.position =
+        Vector3 desiredPosition =
             focusPoint
             - camRotation * Vector3.forward * currentCameraDistance
             + camRotation * Vector3.right * cameraSideOffset;
+
+        Vector3 direction = desiredPosition - focusPoint;
+        float distance = direction.magnitude;
+
+        float finalDistance = distance;
+
+        int collisionMask = cameraCollisionLayers & ~(1 << gameObject.layer);
+
+        if (Physics.SphereCast(
+            focusPoint,
+            cameraCollisionRadius,
+            direction.normalized,
+            out RaycastHit hit,
+            distance,
+            collisionMask,
+            QueryTriggerInteraction.Ignore))
+        {
+            finalDistance = Mathf.Max(0f, hit.distance - cameraCollisionOffset);
+        }
+
+        Vector3 finalPosition = focusPoint + direction.normalized * finalDistance;
+
+        if (finalDistance < distance)
+        {
+            cam.position = finalPosition;
+        }
+        else
+        {
+            cam.position = Vector3.Lerp(
+                cam.position,
+                desiredPosition,
+                1f - Mathf.Exp(-cameraTransitionSpeed * Time.deltaTime)
+            );
+        }
 
         cam.rotation = camRotation;
     }

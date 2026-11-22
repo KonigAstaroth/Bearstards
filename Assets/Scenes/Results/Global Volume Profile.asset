@@ -58,7 +58,7 @@ MonoBehaviour:
     m_Value: -0.4
   contrast:
     m_OverrideState: 1
-    m_Value: 19
+    m_Value: 59
   colorFilter:
     m_OverrideState: 1
     m_Value: {r: 0.7137255, g: 0.8745098, b: 0.99215686, a: 1}
@@ -89,7 +89,7 @@ MonoBehaviour:
     m_Value: {x: 0.5, y: 0.5}
   intensity:
     m_OverrideState: 1
-    m_Value: 0.335
+    m_Value: 0.41
   smoothness:
     m_OverrideState: 0
     m_Value: 0.176
@@ -183,7 +183,7 @@ MonoBehaviour:
     m_Value: 1
   gaussianStart:
     m_OverrideState: 1
-    m_Value: 30
+    m_Value: 5
   gaussianEnd:
     m_OverrideState: 1
     m_Value: 60

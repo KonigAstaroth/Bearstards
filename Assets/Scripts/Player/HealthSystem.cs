@@ -103,6 +103,14 @@ public class HealthSystem : MonoBehaviourPun
         if (currentHealth <= 0)
         {
             isDead = true;
+
+            if(attackerViewID == -1)
+            {
+                photonView.RPC(
+                    nameof(ScoreManager.AwardKillPoints),
+                    photonView.Owner, -100
+                );
+            }
             Die(attackerViewID, pointsPerKill);
         }
     }
