@@ -154,14 +154,18 @@ public class ScoreManager : MonoBehaviourPunCallbacks
 
         if (localScoreText != null)
         {
-            localScoreText.text = $"{EstadoPartida.Puntos(localPlayer.ActorNumber)}";
+            int score = EstadoPartida.Puntos(localPlayer.ActorNumber);
+
+            localScoreText.text = $"{score}";
+            localScoreText.color = score < 0 ? Color.red : Color.white;
         }
 
         if (opponentScoreText != null)
         {
-            opponentScoreText.text = opponent != null
-                ? $"{EstadoPartida.Puntos(opponent.ActorNumber)}"
-                : "0";
+            int score = opponent != null ? EstadoPartida.Puntos(opponent.ActorNumber) : 0;
+            opponentScoreText.text = $"{score}";
+
+            opponentScoreText.color = score < 0 ? Color.red : Color.white;
         }
     }
 }
